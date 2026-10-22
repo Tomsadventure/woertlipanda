@@ -1,0 +1,17 @@
+{
+  "name": "Wörtli-Panda – Englisch-Wörtli lernen",
+  "short_name": "Wörtli-Panda",
+  "description": "Englisch-Wörtli der 4. Klasse lernen mit Bao, dem Panda.",
+  "lang": "de-CH",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F8EE",
+  "theme_color": "#F4F8EE",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
