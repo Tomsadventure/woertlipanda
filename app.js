@@ -414,6 +414,7 @@ function showTask() {
   setBao('bao_denkt');
   updateLeaves();
   card.className = `qcard k-${t.kind}`;
+  document.getElementById('task').dataset.kind = t.kind;     // für das Layout (style.css → Hören)
   foot.innerHTML = '';
   if (t.kind === 'karte') {
     card.innerHTML = `<p class="ask">Neues Wort</p>${picHTML(w.id, 'big')}
@@ -472,18 +473,20 @@ function choose(id, btn) {
 }
 
 /* ---- Puzzle: Buchstaben (b) oder Wörter (w) ---- */
+/* Bei der Lösung (zweimal falsch) fallen die Kärtchen weg – so bleibt Platz für »Weiter«, auch auf kleinen Handys.
+   --n = längstes Wort: so breit dürfen die Lücken werden (style.css → .slot). */
 function renderPuzzle(state = '') {
-  const p = Q.puzzle, a = document.getElementById('answer');
+  const p = Q.puzzle, a = document.getElementById('answer'), tiles = state !== 'solution';
   if (p.typ === 'b') {
     let k = 0;
-    a.innerHTML = `<div class="slots ${state}" lang="en">${p.groups.map(g => `<span class="slot-group">${Array.from({ length: g }, () => {
+    a.innerHTML = `<div class="slots ${state}" lang="en" style="--n:${Math.max(...p.groups)}">${p.groups.map(g => `<span class="slot-group">${Array.from({ length: g }, () => {
       const i = k++, pl = Q.placed[i];
       return `<button class="slot ${pl != null ? 'filled' : ''} ${state && Q.marks ? Q.marks[i] : ''}" data-act="unplace" data-i="${i}">${pl != null ? p.tiles[pl] : ''}</button>`;
     }).join('')}</span>`).join('')}</div>
-    <div class="tiles" lang="en">${p.tiles.map((c, i) => `<button class="tile" data-act="place" data-i="${i}" ${Q.placed.includes(i) ? 'disabled' : ''}>${c}</button>`).join('')}</div>`;
+    ${tiles ? `<div class="tiles" lang="en">${p.tiles.map((c, i) => `<button class="tile" data-act="place" data-i="${i}" ${Q.placed.includes(i) ? 'disabled' : ''}>${c}</button>`).join('')}</div>` : ''}`;
   } else {
     a.innerHTML = `<div class="line ${state}" lang="en">${Q.placed.length ? Q.placed.map((ti, k) => `<button class="wtile placed ${state && Q.marks ? Q.marks[k] : ''}" data-act="unplace" data-i="${k}">${esc(p.tiles[ti].t)}</button>`).join('') : '<span class="line-hint">Tippe die Wörter in der richtigen Reihenfolge an</span>'}</div>
-    <div class="tiles" lang="en">${p.tiles.map((x, i) => `<button class="wtile" data-act="place" data-i="${i}" ${Q.placed.includes(i) ? 'disabled' : ''}>${esc(x.t)}</button>`).join('')}</div>`;
+    ${tiles ? `<div class="tiles" lang="en">${p.tiles.map((x, i) => `<button class="wtile" data-act="place" data-i="${i}" ${Q.placed.includes(i) ? 'disabled' : ''}>${esc(x.t)}</button>`).join('')}</div>` : ''}`;
   }
 }
 function place(i) {

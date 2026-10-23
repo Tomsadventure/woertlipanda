@@ -177,22 +177,35 @@ body[data-view="task"] .screen.task { display: flex; flex-direction: column; min
 .fb.good { color: var(--bamboo-deep); }
 .fb.soft { color: #B5562F; }
 
-.grid4 { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 4px; }
+.grid4 { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
 .opt { border-radius: var(--r-md); background: var(--card); border: 3px solid var(--line); font-weight: 800; transition: transform .1s; }
 .opt:active { transform: scale(.98); }
 .pic-opt { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 8px 10px; font-size: 15px; color: var(--ink-soft); }
 .pic-opt img { width: 100%; max-width: 190px; aspect-ratio: 1; object-fit: cover; border-radius: 14px; }
-.word-opt { min-height: 74px; padding: 8px 12px; font-size: clamp(22px, 3.6vw, 30px); }
+.word-opt { min-height: 74px; padding: 8px 12px; font-size: clamp(22px, 3.6vw, 30px); overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }   /* lange Wörter wie «Lebensmitteltest» trennen statt die Spalte zu sprengen */
 .de-opts .word-opt { font-family: inherit; font-size: clamp(18px, 3vw, 24px); }
 .opt.right { border-color: var(--bamboo); background: var(--bamboo-tint); color: var(--bamboo-deep); }
 .opt.wrong { border-color: var(--berry); background: var(--berry-soft); color: var(--berry); opacity: .8; }
 .opt.solution { border-color: var(--bamboo); box-shadow: 0 0 0 4px var(--bamboo-soft); opacity: 1; }
-@media (min-width: 820px) { .grid4.pics { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 820px) { .grid4.pics { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+/* Hören auf niedrigen Bildschirmen: die Aufgabe ist genau so hoch wie der Bildschirm, und die vier Bilder werden kleiner, bis alles
+   passt – auch dreizeilige Bildunterschriften und »Weiter«. Ist genug Platz, bleibt alles wie oben (Bilder bis 190 px). */
+body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height: 100dvh; min-height: 0; }
+.task[data-kind="hoeren"] .qcard { flex: 0 1 auto; min-height: 0; }
+.k-hoeren .grid4.pics { flex: 0 1 auto; min-height: 0; grid-template: repeat(2, minmax(0, 1fr)) / repeat(2, minmax(0, 1fr)); }
+.k-hoeren .pic-opt { min-height: 0; display: grid; grid-template-rows: minmax(0, max-content) auto; align-content: start; justify-items: center; }
+.k-hoeren .pic-opt img { width: auto; height: auto; max-width: min(100%, 190px); max-height: 100%; }
+@media (min-width: 820px) { .k-hoeren .grid4.pics { grid-template: minmax(0, 1fr) / repeat(4, minmax(0, 1fr)); } }
 
-.answer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 4px; }
+.answer { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 4px; container-type: inline-size; }
 .slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; }
 .slot-group { display: flex; gap: 6px; }
-.slot { width: clamp(38px, 7vw, 52px); height: clamp(48px, 8.5vw, 62px); border-radius: 12px; border: 3px dashed var(--bamboo-soft); background: var(--bamboo-tint); font-family: var(--en); font-weight: 700; font-size: clamp(26px, 4.6vw, 34px); display: grid; place-items: center; }
+/* Lücken: normal clamp(38px, 7vw, 52px); ein langes Wort (--n Buchstaben, z. B. «candyfloss») wird schmaler, damit es in eine Zeile passt */
+.slot {
+  --w: min(clamp(38px, 7vw, 52px), calc((100cqw - (var(--n, 1) - 1) * 6px) / var(--n, 1)));
+  width: var(--w); height: min(clamp(48px, 8.5vw, 62px), calc(var(--w) * 1.26)); border-radius: 12px; border: 3px dashed var(--bamboo-soft); background: var(--bamboo-tint);
+  font-family: var(--en); font-weight: 700; font-size: min(clamp(26px, 4.6vw, 34px), calc(var(--w) * .7)); display: grid; place-items: center;
+}
 .slot.filled { border-style: solid; border-color: var(--bamboo); background: #fff; }
 .slots.right .slot { border-color: var(--bamboo); background: var(--bamboo-tint); color: var(--bamboo-deep); }
 .slot.bad { border-color: var(--berry); background: var(--berry-soft); color: var(--berry); }
