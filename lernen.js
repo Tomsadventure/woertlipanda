@@ -1,4 +1,4 @@
-/* Wörtli-Panda – der Lern-Kern: Lernstand je Wort, Runden zusammenstellen, Antworten prüfen, Puzzles.
+/* Wörtli-Panda – der Lern-Kern: Lernstand je Wort, Runden zusammenstellen, Antworten prüfen, Puzzles, Sticker.
    Ohne Bildschirm-Code, damit Scripts/test.mjs alles mit Node prüfen kann (window.Lernen bzw. module.exports). */
 (function (root) {
 'use strict';
@@ -41,10 +41,13 @@ function record(st, kind, result, round, now) {
   return s;
 }
 
-/* ================================================== Antworten prüfen */
+/* ================================================== Antworten prüfen
+   Ohne Gross/klein, Leerzeichen am Rand und Satzzeichen am Ende; ’ = '; »waiter,waitress« = »waiter, waitress«,
+   »left / right« = »left/right«. */
 function norm(s) {
   return String(s == null ? '' : s).toLowerCase()
     .replace(/[’‘`´]/g, "'").replace(/…/g, '...').replace(/\s*\.\.\.\s*/g, ' ... ')
+    .replace(/\s*,\s*/g, ', ').replace(/\s*\/\s*/g, '/')
     .replace(/\s+/g, ' ').trim().replace(/[.!?,;:]+$/, '').trim();
 }
 const isRight = (w, input) => w.antworten.some(a => norm(a) === norm(input));
@@ -85,15 +88,22 @@ function shuffle(a, rnd = Math.random) {
   for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
   return a;
 }
-/* Buchstaben-Puzzle (Typ »wort«): Lücken je Wort + gemischte Buchstaben und 2–3 ähnliche Ablenker */
+/* Buchstaben-Puzzle (Typ »wort«): je Wort eine Gruppe; in der Gruppe Lücken (null) und feste Zeichen (das Komma in
+   »waiter, waitress«, der Schrägstrich in »left/right«), dazu die gemischten Buchstaben und 2–3 ähnliche Ablenker.
+   Gelegt wird nur, was eine Lücke ist. */
+const LETTER = /[a-z]/;
 function letterPuzzle(w, rnd = Math.random) {
-  const words = w.en.toLowerCase().split(' ');
-  const letters = words.join('').split('');
+  const src = norm(w.en);
+  const groups = src.split(' ').map(g => g.split('').map(c => (LETTER.test(c) ? null : c)));
+  const letters = src.split('').filter(c => LETTER.test(c));
   const pool = [...new Set(letters.map(c => SIMILAR[c]).filter(c => c && !letters.includes(c)))];
-  const decoys = shuffle(pool, rnd).slice(0, letters.length > 6 ? 3 : 2);
+  const want = letters.length > 6 ? 3 : 2;
+  // Zu wenig ähnliche (»cinema« hat nur k): mit häufigen Buchstaben auffüllen, die nicht im Wort sind
+  const more = 'eiaoustrnlkd'.split('').filter(c => !letters.includes(c) && !pool.includes(c));
+  const decoys = shuffle(pool, rnd).slice(0, want).concat(shuffle(more, rnd)).slice(0, want);
   let tiles;
   do { tiles = shuffle(letters.concat(decoys), rnd); } while (tiles.join('') === letters.join('') && letters.length > 1);
-  return { groups: words.map(x => x.length), answer: letters.join(''), tiles };
+  return { groups, answer: letters.join(''), tiles };
 }
 /* Wort-Puzzle (Typ »phrase« und »satz«): die Wörter in die richtige Reihenfolge; »...« wird ein eigenes Kärtchen */
 function wordTokens(en) { return norm(en) === '' ? [] : en.replace(/\s*\.\.\.\s*/g, ' … ').trim().split(/\s+/); }
@@ -198,8 +208,33 @@ function memoryDeck(words, pairs = 6, rnd = Math.random) {
   return shuffle(pick.flatMap(w => [{ id: w.id, side: 'bild' }, { id: w.id, side: 'wort' }]), rnd);
 }
 
+/* ============================================================ Stickeralbum
+   Jede Unit hat eine Albumseite. Lernpunkte = Summe der Stufen der Wörter der Unit (Unit 1: 31 Wörter x 5 = 155).
+   Die normalen Sticker der Unit verteilen sich gleichmässig bis »alle Wörter sicher« (dann ist auch der letzte da) –
+   bei 15 Stickern und 155 Punkten etwa alle 10 Punkte einer. base = Lernpunkte, die es schon vor den Stickern gab:
+   sie zählen nicht (Wunsch 2026-10-25: bei null anfangen), die Sticker verteilen sich dann auf den Rest.
+   Einmal verdient bleibt verdient, auch wenn Stufen wieder sinken. Glitzer-Sticker: Bedingung in Stickers.csv, geprüft in app.js. */
+const points = (words, W) => words.reduce((s, w) => s + (((W || {})[w.id] || {}).box || 0), 0);
+/* Ab wie vielen Lernpunkten gibt es den k-ten (1 …) von n normalen Stickern? max = Wörter x 5 */
+function stickerNeed(k, n, max, base = 0) {
+  const need = base + Math.ceil(k * Math.max(max - base, n) / n);
+  return max > base ? Math.min(need, max) : need;
+}
+/* Neu verdiente normale Sticker einer Unit (normal = ihre normalen Sticker in der Reihenfolge von Stickers.csv) */
+function stickersEarned(normal, have, pts, max, base = 0) {
+  let k = 0;
+  while (k < normal.length && pts >= stickerNeed(k + 1, normal.length, max, base)) k++;
+  return normal.slice(0, k).map(s => s.id).filter(id => !have.includes(id));
+}
+/* Wie viele Lernpunkte noch bis zum nächsten normalen Sticker der Unit? null = alle schon da */
+function toNextSticker(normal, have, pts, max, base = 0) {
+  const owned = normal.filter(s => have.includes(s.id)).length;
+  if (owned >= normal.length) return null;
+  return Math.max(1, stickerNeed(owned + 1, normal.length, max, base) - pts);
+}
+
 const api = { MAX, blank, record, norm, isRight, closest, diff, letterPuzzle, wordPuzzle, wordTokens, puzzleKind,
-  choices, buildSession, buildDrill, buildTest, memoryDeck, shuffle, spellKind };
+  choices, buildSession, buildDrill, buildTest, memoryDeck, shuffle, spellKind, points, stickerNeed, stickersEarned, toNextSticker };
 if (typeof module !== 'undefined' && module.exports) module.exports = api;
 else root.Lernen = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -6,6 +6,8 @@ const L = window.Lernen;
 const D = window.DATEN;
 const WORD = Object.fromEntries(D.woerter.map(w => [w.id, w]));
 const UNIT = Object.fromEntries(D.units.map(u => [u.n, u]));
+const STICKER = Object.fromEntries(D.stickers.map(s => [s.id, s]));
+const ACTIVE = D.units.filter(u => u.aktiv);
 const img = name => `img/${name}.webp`;
 
 /* ================================================================ Speicher */
@@ -16,13 +18,23 @@ function load() {
   let d = null;
   try { d = JSON.parse(localStorage.getItem(KEY)); } catch (e) { /* privates Fenster o. Ä. */ }
   d = d && typeof d === 'object' ? d : {};
-  const firstActive = (D.units.find(u => u.aktiv) || D.units[0]).n;
+  const firstActive = (ACTIVE[0] || D.units[0]).n;
+  const w = d.w && typeof d.w === 'object' ? d.w : {};
+  const ids = x => (Array.isArray(x) ? x.filter(id => STICKER[id]) : []);
+  // Lernstand von vor den Stickern (bis 2026-10-25): diese Lernpunkte zählen nicht für Sticker (base, siehe lernen.js)
+  const before = Object.keys(w).length && !Array.isArray(d.stickers);
+  const base = d.base && typeof d.base === 'object' ? d.base
+    : before ? Object.fromEntries(ACTIVE.map(u => [u.n, L.points(D.woerter.filter(x => x.unit === u.n), w)])) : {};
   return {
     settings: Object.assign({}, DEFAULTS, d.settings || {}),
-    w: d.w && typeof d.w === 'object' ? d.w : {},          // Wort-ID -> Lernstand (lernen.js)
+    w,                                                        // Wort-ID -> Lernstand (lernen.js)
     unit: d.unit && UNIT[d.unit] && UNIT[d.unit].aktiv ? d.unit : firstActive,
     round: d.round || 0,                                      // gezählte Runden (für »in einer späteren Runde«)
     tests: Array.isArray(d.tests) ? d.tests.slice(-20) : [],
+    stickers: ids(d.stickers),                                // verdiente Sticker (Reihenfolge = wann verdient)
+    neu: ids(d.neu),                                          // verdient, aber im Album noch nicht angeschaut
+    base,                                                     // Unit -> Lernpunkte, die nicht für Sticker zählen
+    albumSeen: !!d.albumSeen,
     waldSeen: !!d.waldSeen,
     hintClosed: !!d.hintClosed,
     installed: !!d.installed,
@@ -32,9 +44,11 @@ function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e
 const st = id => S.w[id] || L.blank();
 const unitWords = n => D.woerter.filter(w => w.unit === n);
 const grown = n => unitWords(n).filter(w => st(w.id).box === L.MAX).length;
+save();                                                       // base gleich festhalten (Lernstand von vor den Stickern)
 const name = () => (S.settings.name || '').trim();
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const show = en => esc(en).replace(/\.\.\./g, '…');   // »...« im Schulbuch = Lücke im Satz
+const show = en => esc(en).replace(/\.\.\./g, '…').replace(/\//g, '/<wbr>');   // »...« im Schulbuch = Lücke im Satz
+const de = t => esc(t).replace(/\//g, '/<wbr>');     // nach »/« darf umbrochen werden: »Polizeibeamter/ -beamtin«
 
 /* ================================================================== Icons */
 const I = p => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -60,6 +74,8 @@ const ICON = {
   test: I('<path d="M8 4h8M9 2h6v4H9z"/><rect x="5" y="4" width="14" height="18" rx="2"/><path d="M8.5 12l2 2 4-4M8.5 18h7"/>'),
   list: I('<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>'),
   lock: I('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
+  sticker: I('<path d="M20 12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6"/><path d="M20 12l-8 8c0-4.4 3.6-8 8-8z"/><path d="M8.5 10.5l1.2 1.2 2.6-3"/>'),
+  star: I('<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>'),
 };
 /* Bambus-Symbol (Fortschritt): Höhe = Stufe 0–5 */
 function bambooSVG(box, cls = '') {
@@ -201,6 +217,14 @@ const Sound = (() => {
     done() { if (!on()) return; const t = ctx.currentTime + 0.05, seq = [72, 76, 79, 84, 88]; seq.forEach((m, i) => marimba(note(m), t + i * 0.11, 0.85)); bell(note(100), t + 0.55, 0.8); },
     sparkle() { if (!on()) return; const t = ctx.currentTime + 0.02; [84, 88, 91, 96, 100].forEach((m, i) => bell(note(m), t + i * 0.065, 0.55)); },
     flip() { if (!on()) return; const t = ctx.currentTime; osc('triangle', 520, t, 0.08, 0.08, sfxBus); osc('triangle', 780, t + 0.05, 0.08, 0.06, sfxBus); },
+    /* Sticker: ein weiches »Plopp« nach oben (wie ein Sticker, der abgezogen wird), dann Glitzern */
+    sticker() {
+      if (!on()) return;
+      const t = ctx.currentTime + 0.02, o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(820, t + 0.14);
+      env(g, t, 0.008, 0.22, 0.16); o.connect(g); g.connect(sfxBus); o.start(t); o.stop(t + 0.28);
+      [88, 91, 96, 100, 103].forEach((m, i) => bell(note(m), t + 0.2 + i * 0.07, 0.5));
+    },
   };
   return { say, stop, preload, sfx, ready, busy };
 })();
@@ -212,12 +236,12 @@ const rnd = n => 1 + Math.floor(Math.random() * n);
 const pad2 = n => String(n).padStart(2, '0');
 const line = { hallo: () => `bao_hallo_${pad2(rnd(3))}`, lob: () => `bao_lob_${pad2(rnd(12))}`, fast: () => `bao_fast_${pad2(rnd(4))}`, fertig: () => `bao_fertig_${pad2(rnd(3))}`, los: () => `bao_los_${pad2(rnd(2))}` };
 function sayWord(id, slow) { Sound.say(slow ? `${id}_slow` : id); }
-/* Buchstabieren: die englischen Buchstabennamen nacheinander, zwischen Wörtern eine Pause */
+/* Buchstabieren: die englischen Buchstabennamen nacheinander, zwischen Wörtern (und bei »left/right«) eine Pause */
 function spell(id) {
   const parts = [];
   WORD[id].en.toLowerCase().split('').forEach(c => {
     if (/[a-z]/.test(c)) parts.push(`letter_${c}`, { pause: 120 });
-    else if (c === ' ') parts.push({ pause: 450 });
+    else if (c === ' ' || c === '/') parts.push({ pause: 450 });
   });
   Sound.say(parts);
 }
@@ -235,27 +259,87 @@ let reloadPending = false;
 function nav(name, params = {}, push = true) {
   closeSheet(true);
   clearTimeout(timer);
-  if (['task', 'memory'].includes(view.name) && !['task', 'result', 'memory'].includes(name)) { Q = null; Sound.stop(); }
+  const from = view.name;
+  if (['task', 'memory'].includes(from) && !['task', 'result', 'memory'].includes(name)) { Q = null; Sound.stop(); }
   view = Object.assign({ name }, params);
   if (push) { try { history.pushState({ name }, ''); } catch (e) { /* file:// */ } }
   render();
   window.scrollTo(0, 0);
+  if (from === 'karten' && name !== 'karten') stickerToast();      // in den Lernkarten verdiente Sticker zeigen
   if (name === 'home' && reloadPending) location.reload();
 }
 window.addEventListener('popstate', e => {
   const s = e.state || { name: 'home' };
   clearTimeout(timer);
-  if (['task', 'memory', 'result'].includes(view.name)) { Q = null; Sound.stop(); }
-  view = ['wald', 'karten'].includes(s.name) ? { name: s.name } : { name: 'home' };
+  const from = view.name;
+  if (['task', 'memory', 'result'].includes(from)) { Q = null; Sound.stop(); }
+  view = ['wald', 'karten', 'album'].includes(s.name) ? { name: s.name } : { name: 'home' };
   closeSheet(true);
   render();
+  if (from === 'karten' && view.name !== 'karten') stickerToast();
 });
 function render() {
   document.body.dataset.view = view.name;
-  const R = { home: homeHTML, wald: waldHTML, karten: kartenHTML, result: () => resultHTML(view.res), memory: memoryHTML };
+  const R = { home: homeHTML, wald: waldHTML, album: albumHTML, karten: kartenHTML, result: () => resultHTML(view.res), memory: memoryHTML };
   if (view.name === 'task') { app.innerHTML = taskShellHTML(); showTask(); return; }
   app.innerHTML = R[view.name]();
   if (view.name === 'karten') afterKarte();
+  if (view.name === 'album') {                                       // die angeschaute Seite ist nicht mehr »neu«
+    const page = albumPage(), seen = S.neu.filter(id => STICKER[id].unit === page);
+    if (seen.length) { S.neu = S.neu.filter(id => !seen.includes(id)); S.albumSeen = true; save(); }
+  }
+}
+
+/* ------------------------------------------------------------- Sticker
+   Je Unit eine Albumseite: normale Sticker für Lernpunkte dieser Unit, Glitzer-Sticker für Spezielles (lernen.js → Stickeralbum) */
+const unitMax = n => unitWords(n).length * L.MAX;
+const unitPts = n => L.points(unitWords(n), S.w);
+const unitStickers = (n, art) => D.stickers.filter(s => s.unit === n && (!art || s.art === art));
+/* Neu verdiente Sticker eintragen. ctx: { unit, runde1, test100, serie10, memory9 } aus der eben beendeten Übung */
+function checkStickers(ctx = {}) {
+  const neu = [];
+  ACTIVE.forEach(u => neu.push(...L.stickersEarned(unitStickers(u.n, 'normal'), S.stickers, unitPts(u.n), unitMax(u.n), S.base[u.n] || 0)));
+  unitStickers(ctx.unit, 'glitzer').concat(D.stickers.filter(s => s.bedingung === 'alle')).forEach(s => {
+    if (S.stickers.includes(s.id) || neu.includes(s.id)) return;
+    const ok = s.bedingung === 'alle' ? grown(s.unit) === unitWords(s.unit).length && (S.base[s.unit] || 0) < unitMax(s.unit) : !!ctx[s.bedingung];
+    if (ok) neu.push(s.id);
+  });
+  if (neu.length) { S.stickers.push(...neu); S.neu.push(...neu); save(); }
+  return neu;
+}
+const BEDINGUNG = { runde1: 'Die erste Runde mit Bao', test100: 'Wörtlitest ohne Fehler (ab 10 Wörtern)', serie10: '10 richtig hintereinander',
+  memory9: 'Memory in höchstens 9 Zügen' };
+const bedingungText = s => (s.bedingung === 'alle' ? `Alle Wörter von ${UNIT[s.unit].titel} sicher` : BEDINGUNG[s.bedingung] || '');
+function nextStickerText(n = S.unit) {
+  const k = L.toNextSticker(unitStickers(n, 'normal'), S.stickers, unitPts(n), unitMax(n), S.base[n] || 0);
+  return k == null ? `Alle Sticker von ${UNIT[n].titel} gesammelt!` : `Nächster Sticker: noch ${k} ${k === 1 ? 'Lernpunkt' : 'Lernpunkte'}`;
+}
+function nextStickerPct(n = S.unit) {
+  const normal = unitStickers(n, 'normal'), owned = normal.filter(s => S.stickers.includes(s.id)).length, b = S.base[n] || 0;
+  if (owned >= normal.length) return 100;
+  const from = owned ? L.stickerNeed(owned, normal.length, unitMax(n), b) : b, to = L.stickerNeed(owned + 1, normal.length, unitMax(n), b);
+  return Math.max(0, Math.min(100, Math.round(100 * (unitPts(n) - from) / Math.max(1, to - from))));
+}
+const nextStickerHTML = (cls = '', n = S.unit) => `<${cls.includes('static') ? 'div' : 'button'} class="next-stk ${cls}" ${cls.includes('static') ? '' : 'data-act="album"'}>
+  <span class="next-stk-t">${ICON.sticker}${nextStickerText(n)}</span><span class="progress small"><i style="width:${nextStickerPct(n)}%"></i></span></${cls.includes('static') ? 'div' : 'button'}>`;
+/* Sticker im Rahmen; Glitzer-Sticker bekommen einen wandernden Lichtstreifen (style.css, Maske = das Bild selbst) */
+const stickerImg = (id, cls = '') => `<span class="stk-wrap ${STICKER[id].art === 'glitzer' ? 'glitzer' : ''} ${cls}" style="--m:url(${img(id)})"><img class="stk" src="${img(id)}" alt="${esc(STICKER[id].de)}"></span>`;
+const newStickersHTML = ids => `<div class="new-stk">${ids.slice(0, 4).map((id, i) => `<button class="new-stk-i ${STICKER[id].art === 'glitzer' ? 'glitzer' : ''}" data-act="sticker" data-id="${id}" style="--i:${i}">
+  ${stickerImg(id)}<span class="stk-t" lang="en">${esc(STICKER[id].titel)}</span></button>`).join('')}</div>`;
+/* Ausserhalb einer Runde verdiente Sticker (z. B. in den Lernkarten): kurz als Blatt zeigen */
+function stickerToast() {
+  const neu = checkStickers();
+  if (!neu.length) return;
+  if (view.name === 'home') render();                              // Zähler im Album-Knopf
+  setTimeout(() => {
+    openSheet('sticker-neu', `<div class="sheet-head"><h2>${neu.length === 1 ? 'Neuer Sticker!' : `${neu.length} neue Sticker!`}</h2><button class="icon-btn" data-act="close-sheet" aria-label="Schliessen">${ICON.close}</button></div>
+      <div class="sheet-body center">${newStickersHTML(neu)}<div class="confirm-actions"><button class="btn primary" data-act="album">${ICON.sticker}<span>Zum Album</span></button></div></div>`);
+    celebrateSticker(neu);
+  }, 250);
+}
+function celebrateSticker(ids) {
+  sfx.sticker();
+  bao([{ pause: 200 }, ids.some(id => STICKER[id].art === 'glitzer') ? 'bao_sticker_glitzer' : 'bao_sticker'], true);
 }
 
 /* ------------------------------------------------------------------ Start */
@@ -279,6 +363,7 @@ function homeHTML() {
       <button class="brand" data-act="hello" aria-label="Wörtli-Panda – Bao sagt Hallo"><img src="icons/favicon.png" alt=""><span>Wörtli-Panda</span></button>
       <div class="bar-right">
         <button class="pill" data-act="wald" aria-label="Bambuswald: ${g} von ${words.length} Bambus ausgewachsen">${bambooSVG(5, 'pill-bmb')}<span class="pill-t">Bambuswald</span><b>${g}/${words.length}</b></button>
+        <button class="pill album-pill ${S.neu.length ? 'has-new' : ''}" data-act="album" aria-label="Stickeralbum: ${S.stickers.length} von ${D.stickers.length} Stickern">${ICON.sticker}<span class="pill-t">Album</span><b>${S.stickers.length}/${D.stickers.length}</b></button>
         <button class="icon-btn" data-act="settings" aria-label="Einstellungen">${ICON.gear}</button>
       </div>
     </header>
@@ -288,6 +373,7 @@ function homeHTML() {
         <p class="bubble-hi" lang="en">Hi${nm ? ` ${esc(nm)}` : ''}! I'm Bao.</p>
         <p>Wir üben die Wörter von <b>${u.titel}</b>: ${esc(u.thema)}.</p>
         <button class="btn primary big" data-act="start-bao"><span><b>Üben mit Bao</b><small>${sessionPreview()}</small></span>${ICON.next}</button>
+        ${nextStickerHTML()}
       </div>
     </section>
     <section class="unit-head" style="--u:${u.farbe}">
@@ -348,7 +434,7 @@ function refreshInstall() {
 const MODE_LINE = { hoeren: 'bao_modus_hoeren', waehlen: 'bao_modus_waehlen', schreiben: 'bao_modus_schreiben', test: 'bao_modus_test' };
 function startTasks(mode, list) {
   S.round++; save();
-  Q = { mode, list, i: 0, tries: 0, hinted: false, input: '', placed: [], streak: 0, results: [], before: {}, locked: false, extra: 0 };
+  Q = { mode, list, i: 0, tries: 0, hinted: false, input: '', placed: [], streak: 0, maxStreak: 0, results: [], before: {}, locked: false, extra: 0 };
   unitWords(S.unit).forEach(w => { Q.before[w.id] = st(w.id).box; });
   Sound.preload([...new Set(list.flatMap(t => [t.id]))].concat(['bao_lob_01', 'bao_lob_02', 'bao_lob_03', 'bao_fast_01', 'bao_fast_02', 'bao_loesung']));
   [...new Set(list.map(t => t.id))].forEach(id => { new Image().src = img(id); });
@@ -418,7 +504,7 @@ function showTask() {
   foot.innerHTML = '';
   if (t.kind === 'karte') {
     card.innerHTML = `<p class="ask">Neues Wort</p>${picHTML(w.id, 'big')}
-      <p class="en" lang="en">${show(w.en)}</p>${soundBtns(w.id, w.typ === 'wort')}<p class="de">${esc(w.de)}</p>`;
+      <p class="en" lang="en">${show(w.en)}</p>${soundBtns(w.id, w.typ === 'wort')}<p class="de">${de(w.de)}</p>`;
     foot.innerHTML = `<button class="btn primary big" data-act="next" id="next-btn"><span><b>Weiter</b></span>${ICON.next}</button>`;
     return;
   }
@@ -426,12 +512,12 @@ function showTask() {
     const ch = L.choices(unitWords(w.unit), w);
     card.innerHTML = `<p class="ask">Hör gut zu – welches Bild passt?</p>${soundBtns(w.id, false)}
       <div class="fb" id="fb" aria-live="polite"></div>
-      <div class="grid4 pics">${ch.map(c => `<button class="opt pic-opt" data-act="choice" data-id="${c.id}">${picHTML(c.id)}<span>${esc(c.de)}</span></button>`).join('')}</div>`;
+      <div class="grid4 pics">${ch.map(c => `<button class="opt pic-opt" data-act="choice" data-id="${c.id}">${picHTML(c.id)}<span>${de(c.de)}</span></button>`).join('')}</div>`;
     return;
   }
   if (t.kind === 'waehlen_en') {
     const ch = L.choices(unitWords(w.unit), w);
-    card.innerHTML = `<p class="ask">Wie heisst das auf Englisch?</p>${picHTML(w.id)}<p class="de big">${esc(w.de)}</p>
+    card.innerHTML = `<p class="ask">Wie heisst das auf Englisch?</p>${picHTML(w.id)}<p class="de big">${de(w.de)}</p>
       <div class="fb" id="fb" aria-live="polite"></div>
       <div class="grid4 words">${ch.map(c => `<button class="opt word-opt" data-act="choice" data-id="${c.id}" lang="en">${show(c.en)}</button>`).join('')}</div>`;
     return;
@@ -440,14 +526,14 @@ function showTask() {
     const ch = L.choices(unitWords(w.unit), w);
     card.innerHTML = `<p class="ask">Was heisst das auf Deutsch?</p><p class="en" lang="en">${show(w.en)}</p>${soundBtns(w.id, false)}
       <div class="fb" id="fb" aria-live="polite"></div>
-      <div class="grid4 words de-opts">${ch.map(c => `<button class="opt word-opt" data-act="choice" data-id="${c.id}">${esc(c.de)}</button>`).join('')}</div>`;
+      <div class="grid4 words de-opts">${ch.map(c => `<button class="opt word-opt" data-act="choice" data-id="${c.id}">${de(c.de)}</button>`).join('')}</div>`;
     return;
   }
   const isTest = t.kind === 'test';
   const usePuzzle = t.kind === 'puzzle' || (isTest && w.typ === 'satz');
   // Bild, deutsches Wort und Ton nebeneinander, damit Antwort und Tastatur auf denselben Bildschirm passen
   card.innerHTML = `<p class="ask">${isTest ? 'Schreib das englische Wort' : 'Schreib das Wort auf Englisch'}</p>
-    <div class="prompt">${isTest ? '' : picHTML(w.id, 'side')}<div class="prompt-t"><p class="de big">${esc(w.de)}</p>${isTest ? '' : soundBtns(w.id, false)}</div></div>
+    <div class="prompt">${isTest ? '' : picHTML(w.id, 'side')}<div class="prompt-t"><p class="de big">${de(w.de)}</p>${isTest ? '' : soundBtns(w.id, false)}</div></div>
     <div class="answer" id="answer"></div><div class="fb" id="fb" aria-live="polite"></div>`;
   if (usePuzzle) {
     Q.puzzle = L.puzzleKind(w) === 'buchstaben' && !isTest ? Object.assign({ typ: 'b' }, L.letterPuzzle(w)) : Object.assign({ typ: 'w' }, L.wordPuzzle(w));
@@ -474,14 +560,15 @@ function choose(id, btn) {
 
 /* ---- Puzzle: Buchstaben (b) oder Wörter (w) ---- */
 /* Bei der Lösung (zweimal falsch) fallen die Kärtchen weg – so bleibt Platz für »Weiter«, auch auf kleinen Handys.
-   --n = längstes Wort: so breit dürfen die Lücken werden (style.css → .slot). */
+   --n = längstes Wort: so breit dürfen die Lücken werden (style.css → .slot). Komma und Schrägstrich stehen schon da (.fixed). */
 function renderPuzzle(state = '') {
   const p = Q.puzzle, a = document.getElementById('answer'), tiles = state !== 'solution';
   if (p.typ === 'b') {
     let k = 0;
-    a.innerHTML = `<div class="slots ${state}" lang="en" style="--n:${Math.max(...p.groups)}">${p.groups.map(g => `<span class="slot-group">${Array.from({ length: g }, () => {
+    a.innerHTML = `<div class="slots ${state}" lang="en" style="--n:${Math.max(...p.groups.map(g => g.length))}">${p.groups.map(g => `<span class="slot-group">${g.map(fixed => {
+      if (fixed != null) return `<span class="slot fixed">${esc(fixed)}</span>`;
       const i = k++, pl = Q.placed[i];
-      return `<button class="slot ${pl != null ? 'filled' : ''} ${state && Q.marks ? Q.marks[i] : ''}" data-act="unplace" data-i="${i}">${pl != null ? p.tiles[pl] : ''}</button>`;
+      return `<button class="slot ${pl != null ? 'filled' : ''} ${state && Q.marks ? Q.marks[i] || '' : ''}" data-act="unplace" data-i="${i}">${pl != null ? p.tiles[pl] : ''}</button>`;
     }).join('')}</span>`).join('')}</div>
     ${tiles ? `<div class="tiles" lang="en">${p.tiles.map((c, i) => `<button class="tile" data-act="place" data-i="${i}" ${Q.placed.includes(i) ? 'disabled' : ''}>${c}</button>`).join('')}</div>` : ''}`;
   } else {
@@ -531,13 +618,16 @@ function solveOrder(p, want) {
 
 /* ---- Tippen (eigene Tastatur, auch PC-Tastatur) ---- */
 const KEYS = ['qwertzuiop', 'asdfghjkl\'', 'yxcvbnm'];
+const TYPEABLE = /^[a-z' ,/]$/i;
 function renderTyping(state = '') {
   const a = document.getElementById('answer');
   a.innerHTML = `<div class="typed ${state}" lang="en" id="typed">${Q.input ? esc(Q.input) : ''}<i class="caret"></i></div>`;
   const foot = document.getElementById('qfoot');
   if (!foot.querySelector('.kbd')) {
+    // Komma und Schrägstrich nur, wenn das Wort sie braucht (»waiter, waitress«, »turn left/right«)
+    const extra = [',', '/'].filter(c => WORD[cur().id].antworten.some(x => x.includes(c)));
     foot.innerHTML = `<div class="kbd" lang="en">${KEYS.map((r, ri) => `<div class="krow">${r.split('').map(c => `<button class="k" data-act="key" data-v="${c}">${c}</button>`).join('')}${ri === 2 ? `<button class="k fn" data-act="bksp" aria-label="Löschen">${ICON.del}</button>` : ''}</div>`).join('')}
-      <div class="krow"><button class="k space" data-act="key" data-v=" ">Leerschlag</button><button class="k ok" data-act="ok" aria-label="Fertig">${ICON.check}</button></div></div>`;
+      <div class="krow">${extra.map(c => `<button class="k" data-act="key" data-v="${c}">${c}</button>`).join('')}<button class="k space" data-act="key" data-v=" ">Leerschlag</button><button class="k ok" data-act="ok" aria-label="Fertig">${ICON.check}</button></div></div>`;
   }
 }
 function typeKey(c) {
@@ -572,6 +662,7 @@ function right(t) {
   Q.results[Q.i] = { first, id: t.id, kind: t.kind };
   record(t, first ? 'first' : 'second');
   Q.streak = first ? Q.streak + 1 : 0;
+  Q.maxStreak = Math.max(Q.maxStreak, Q.streak);
   setBao('bao_jubel');
   sfx.right(Q.streak);
   const fb = document.getElementById('fb');
@@ -648,13 +739,16 @@ function finish() {
     res.mistakes = Q.results.filter(r => r && !r.first).map(r => ({ id: r.id, answer: r.answer || '' }));
     S.tests.push({ unit: S.unit, t: Date.now(), right: firstRight, total: done.length });
   }
+  res.stickers = checkStickers({ unit: S.unit, runde1: Q.mode.typ === 'bao', serie10: Q.maxStreak >= 10,
+    test100: Q.mode.typ === 'test' && res.total >= 10 && firstRight === res.total });
   save();
   Q = null;
   nav('result', { res });
   sfx.done();
   if (!reduced()) confetti(res.total && firstRight === res.total ? 70 : 40);
   bao([res.total && firstRight === res.total ? 'bao_perfekt' : line.fertig(), { pause: 300 }]);
-  if (res.mode.typ === 'test' && res.mistakes.length) bao('bao_test_ueben', true);
+  if (res.stickers.length) setTimeout(() => celebrateSticker(res.stickers), 900);
+  else if (res.mode.typ === 'test' && res.mistakes.length) bao('bao_test_ueben', true);
   else if (newGrown.length) bao(grown(S.unit) === words.length ? 'bao_wald_voll' : 'bao_bambus', true);
 }
 function resultHTML(res) {
@@ -669,8 +763,9 @@ function resultHTML(res) {
         ${res.total ? `<p class="res-count"><b>${res.firstRight}</b> von ${res.total} ${isTest ? 'richtig geschrieben' : 'beim ersten Mal richtig'}</p>` : ''}
         ${isTest ? `<p class="res-note">${res.total ? Math.round(100 * pct) : 0} % – ${pct >= 0.9 ? 'bereit für den Test in der Schule!' : pct >= 0.7 ? 'fast bereit. Übe die Wörter unten nochmals.' : 'übe die Wörter unten mit Bao, dann nochmals testen.'}</p>` : ''}
       </div></div>
+    ${res.stickers.length ? `<section class="res-stk"><h2>${res.stickers.length === 1 ? 'Neuer Sticker!' : `${res.stickers.length} neue Sticker!`}</h2>${newStickersHTML(res.stickers)}</section>` : ''}
     ${res.mistakes.length ? `<section class="mistakes"><h2>Diese Wörter nochmals üben</h2>
-      ${res.mistakes.map(m => { const w = WORD[m.id]; return `<div class="mis">${picHTML(w.id, 'mini')}<div><p class="de">${esc(w.de)}</p>
+      ${res.mistakes.map(m => { const w = WORD[m.id]; return `<div class="mis">${picHTML(w.id, 'mini')}<div><p class="de">${de(w.de)}</p>
         <p class="en" lang="en">${show(w.en)}</p>${m.answer ? `<p class="yours" lang="en">Deine Antwort: <s>${show(m.answer)}</s></p>` : ''}</div>
         <button class="snd-btn" data-act="say" data-id="${w.id}" aria-label="Anhören">${ICON.speaker}</button></div>`; }).join('')}
       <button class="btn primary" data-act="drill-mistakes">${ICON.pencil}<span>Diese ${res.mistakes.length} Wörter üben</span></button></section>` : ''}
@@ -678,6 +773,7 @@ function resultHTML(res) {
       <div class="grow-row">${(res.grew.length ? res.grew : []).slice(0, 12).map(id => `<span class="grow-w">${bambooSVG(st(id).box)}<span lang="en">${show(WORD[id].en)}</span></span>`).join('')}</div>
       <p>${res.newGrown.length ? `<b>${res.newGrown.length} ${res.newGrown.length === 1 ? 'Bambus ist' : 'Bambusse sind'} ausgewachsen!</b> ` : res.grew.length ? `${res.grew.length} ${res.grew.length === 1 ? 'Bambus ist' : 'Bambusse sind'} gewachsen. ` : ''}Im Bambuswald: ${g} von ${words.length}.</p>
       <div class="progress"><i style="width:${(100 * g / words.length).toFixed(1)}%"></i></div>
+      ${nextStickerHTML('wide')}
     </section>
     <div class="res-actions">
       <button class="btn primary big" data-act="${again}" ${again === 'mode' ? `data-mode="${isTest ? 'test' : res.mode.drill}"` : ''}>${ICON.again}<span><b>Nochmal</b></span></button>
@@ -696,7 +792,7 @@ function kartenHTML() {
       <span class="count">${karteI + 1}/${words.length}</span><button class="icon-btn" data-act="liste" aria-label="Alle Wörter als Liste">${ICON.list}</button></header>
     <section class="flash" style="--u:${UNIT[S.unit].farbe}">
       ${picHTML(w.id, 'big')}
-      <p class="en" lang="en">${show(w.en)}</p>${soundBtns(w.id, w.typ === 'wort')}<p class="de">${esc(w.de)}</p>
+      <p class="en" lang="en">${show(w.en)}</p>${soundBtns(w.id, w.typ === 'wort')}<p class="de">${de(w.de)}</p>
       <p class="lvl">${bambooSVG(st(w.id).box, 'lvl-bmb')}<span>${LEVEL[st(w.id).box]}</span></p>
     </section>
     <div class="flash-nav">
@@ -713,7 +809,7 @@ function afterKarte() {
 function listeHTML() {
   return `<div class="sheet-head"><h2>Alle Wörter · ${UNIT[S.unit].titel}</h2><button class="icon-btn" data-act="close-sheet" aria-label="Schliessen">${ICON.close}</button></div>
   <div class="sheet-body liste">${unitWords(S.unit).map((w, i) => `<div class="li">${bambooSVG(st(w.id).box, 'li-bmb')}
-    <button class="li-main" data-act="karte-go" data-i="${i}"><span class="en" lang="en">${show(w.en)}</span><span class="de">${esc(w.de)}</span></button>
+    <button class="li-main" data-act="karte-go" data-i="${i}"><span class="en" lang="en">${show(w.en)}</span><span class="de">${de(w.de)}</span></button>
     <button class="snd-btn" data-act="say" data-id="${w.id}" aria-label="Anhören">${ICON.speaker}</button></div>`).join('')}</div>`;
 }
 
@@ -755,8 +851,9 @@ function flip(i) {
     if (st(a.id).box === 0) { S.w[a.id] = L.record(st(a.id), 'karte', 'first', S.round, Date.now()); save(); }
     setTimeout(() => { sfx.right(Q.found.size); if (c.side !== 'wort') sayWord(a.id); }, 250);
     if (Q.found.size === 6) {
+      const neu = checkStickers({ unit: S.unit, memory9: Q.moves <= 9 });
       setTimeout(() => { sfx.done(); if (!reduced()) confetti(50); bao('bao_memory_fertig'); }, 900);
-      setTimeout(() => { if (Q && Q.memory) openSheet('mem-done', memDoneHTML()); }, 1600);
+      setTimeout(() => { if (Q && Q.memory) { openSheet('mem-done', memDoneHTML(neu)); if (neu.length) celebrateSticker(neu); } }, 1600);
     } else bao([{ pause: 600 }, 'bao_memory_paar'], true);
     return;
   }
@@ -767,8 +864,8 @@ function flip(i) {
     Q.open = []; Q.locked = false;
   }, 1300);
 }
-const memDoneHTML = () => `<div class="sheet-head"><h2>Alle Paare gefunden!</h2></div><div class="sheet-body center">
-  <img class="sheet-bao" src="${img('bao_jubel')}" alt=""><p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.</p>
+const memDoneHTML = neu => `<div class="sheet-head"><h2>Alle Paare gefunden!</h2></div><div class="sheet-body center">
+  ${neu.length ? newStickersHTML(neu) : `<img class="sheet-bao" src="${img('bao_jubel')}" alt="">`}<p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.</p>
   <div class="confirm-actions"><button class="btn" data-act="home">Übersicht</button><button class="btn primary" data-act="mode" data-mode="memory">${ICON.again}<span>Nochmal</span></button></div></div>`;
 
 /* ----------------------------------------------------------- Bambuswald */
@@ -793,8 +890,42 @@ function waldHTML() {
 function stalkSheetHTML(id) {
   const w = WORD[id], b = st(id).box;
   return `<div class="sheet-head"><h2 lang="en">${show(w.en)}</h2><button class="icon-btn" data-act="close-sheet" aria-label="Schliessen">${ICON.close}</button></div>
-  <div class="sheet-body center word-sheet">${picHTML(id, 'big')}${soundBtns(id, w.typ === 'wort')}<p class="de">${esc(w.de)}</p>
+  <div class="sheet-body center word-sheet">${picHTML(id, 'big')}${soundBtns(id, w.typ === 'wort')}<p class="de">${de(w.de)}</p>
     <p class="lvl">${bambooSVG(b, 'lvl-bmb')}<span>Stufe ${b} von 5: ${LEVEL[b]}</span></p></div>`;
+}
+
+/* --------------------------------------------------------- Stickeralbum
+   Eine Seite je Unit (oben umschalten); sie öffnet bei der Unit, die man gerade übt. */
+const albumPage = () => (view.page && UNIT[view.page] && UNIT[view.page].aktiv ? view.page : S.unit);
+function albumHTML() {
+  const n = albumPage(), u = UNIT[n], have = new Set(S.stickers), neu = new Set(S.neu);
+  const normal = unitStickers(n, 'normal'), glitzer = unitStickers(n, 'glitzer');
+  const slot = (s, i) => have.has(s.id)
+    ? `<button class="slot-stk got ${s.art === 'glitzer' ? 'glitzer' : ''} ${neu.has(s.id) ? 'is-new' : ''}" data-act="sticker" data-id="${s.id}" aria-label="${esc(s.titel)}">
+        ${stickerImg(s.id)}<span class="stk-t" lang="en">${esc(s.titel)}</span>${neu.has(s.id) ? '<em>Neu</em>' : ''}</button>`
+    : `<div class="slot-stk empty ${s.art === 'glitzer' ? 'glitzer' : ''}"><span class="stk-n">${s.art === 'glitzer' ? ICON.star : i + 1}</span>
+        <span class="stk-t">${s.art === 'glitzer' ? esc(bedingungText(s)) : '?'}</span></div>`;
+  const full = normal.concat(glitzer).every(s => have.has(s.id));
+  const step = Math.max(1, Math.round((unitMax(n) - (S.base[n] || 0)) / normal.length));
+  return `<div class="screen album">
+    <header class="bar"><button class="icon-btn" data-act="home" aria-label="Zurück">${ICON.back}</button><h1 class="bar-title">Stickeralbum</h1><span class="count">${have.size}/${D.stickers.length}</span></header>
+    ${ACTIVE.length > 1 ? `<div class="seg album-seg" role="radiogroup" aria-label="Albumseite">${ACTIVE.map(x => `<button role="radio" aria-checked="${x.n === n}" data-act="album-page" data-v="${x.n}">${x.titel}${D.stickers.some(s => s.unit === x.n && neu.has(s.id)) && x.n !== n ? ' •' : ''}</button>`).join('')}</div>` : ''}
+    <section class="album-top" style="--u:${u.farbe}"><img class="album-bao" src="${img(full ? 'bao_jubel' : 'bao_hallo')}" alt="Bao">
+      <div><h2 class="album-unit">${u.titel} <span>${esc(u.thema)}</span></h2>
+      <p class="album-intro">Jedes Wort bringt bis zu 5 Lernpunkte – je besser du es kannst, desto mehr. Etwa alle ${step} Lernpunkte gibt es einen neuen Sticker. Sind alle Wörter sicher, ist die Seite voll. Glitzer-Sticker gibt es für besondere Leistungen.</p>
+      ${nextStickerHTML('static', n)}</div></section>
+    <h2 class="album-h">Sticker <span>${normal.filter(s => have.has(s.id)).length} von ${normal.length}</span></h2>
+    <section class="album-grid">${normal.map(slot).join('')}</section>
+    <h2 class="album-h">Glitzer-Sticker <span>${glitzer.filter(s => have.has(s.id)).length} von ${glitzer.length}</span></h2>
+    <section class="album-grid">${glitzer.map(slot).join('')}</section>
+  </div>`;
+}
+function stickerSheetHTML(id) {
+  const s = STICKER[id];
+  return `<div class="sheet-head"><h2 lang="en">${esc(s.titel)}</h2><button class="icon-btn" data-act="close-sheet" aria-label="Schliessen">${ICON.close}</button></div>
+  <div class="sheet-body center stk-sheet">${stickerImg(id, 'big')}
+    <button class="snd-btn" data-act="say-sticker" data-id="${id}" aria-label="Anhören">${ICON.speaker}</button>
+    <p class="de">${esc(s.de)}</p>${s.art === 'glitzer' ? `<p class="set-note">Glitzer-Sticker: ${esc(bedingungText(s))}</p>` : ''}</div>`;
 }
 
 /* --------------------------------------------------------- Einstellungen */
@@ -833,7 +964,7 @@ function settingsHTML() {
     </section>
     <div id="install-set">${installSetHTML()}</div>
     <section class="set-group"><h3>Fortschritt</h3>
-      <p class="set-note">${S.round} ${S.round === 1 ? 'Runde' : 'Runden'} geübt${S.tests.length ? ` · letzter Wörtlitest: ${S.tests[S.tests.length - 1].right} von ${S.tests[S.tests.length - 1].total}` : ''}.</p>
+      <p class="set-note">${S.round} ${S.round === 1 ? 'Runde' : 'Runden'} geübt · ${S.stickers.length} Sticker${S.tests.length ? ` · letzter Wörtlitest: ${S.tests[S.tests.length - 1].right} von ${S.tests[S.tests.length - 1].total}` : ''}.</p>
       <button class="btn danger" data-act="reset">Alles zurücksetzen</button>
     </section>
     <p class="version">Wörtli-Panda · Stand ${esc(window.BUILD || 'dev')} · Stimme: ElevenLabs · Bilder: OpenAI · Schriften: Nunito, Andika (SIL OFL)</p>
@@ -896,6 +1027,14 @@ function onClick(e) {
       if (!S.waldSeen) { S.waldSeen = true; save(); bao('bao_wald'); }
       break;
     case 'stalk': sfx.sparkle(); openSheet('stalk', stalkSheetHTML(b.dataset.id)); sayWord(b.dataset.id); break;
+    case 'album':
+      sfx.tap(); nav('album', { page: S.unit });
+      if (!S.albumSeen) { S.albumSeen = true; save(); bao('bao_album'); }
+      else if (S.stickers.length === D.stickers.length) bao('bao_album_voll');
+      break;
+    case 'album-page': sfx.flip(); view.page = +b.dataset.v; render(); window.scrollTo(0, 0); break;
+    case 'sticker': sfx.sparkle(); openSheet('sticker', stickerSheetHTML(b.dataset.id)); Sound.say(b.dataset.id); break;
+    case 'say-sticker': Sound.say(b.dataset.id); break;
     case 'settings': sfx.tap(); openSheet('settings', settingsHTML()); break;
     case 'close-sheet': closeSheet(); if (view.name === 'home') render(); break;
     case 'home': sfx.tap(); nav('home'); break;
@@ -938,8 +1077,8 @@ function onClick(e) {
       break;
     }
     case 'test-sound': sfx.right(3); setTimeout(() => Sound.say(['bao_hallo_02', { pause: 200 }, 'u1_smell']), 350); break;
-    case 'reset': openSheet('reset', confirmHTML('Alles zurücksetzen?', 'Der ganze Bambuswald und alle Lernstände werden gelöscht. Das lässt sich nicht rückgängig machen.', 'Zurücksetzen', 'reset-yes')); break;
-    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; save(); closeSheet(true); nav('home', {}, false); break;
+    case 'reset': openSheet('reset', confirmHTML('Alles zurücksetzen?', 'Der ganze Bambuswald, alle Lernstände und alle Sticker werden gelöscht. Das lässt sich nicht rückgängig machen.', 'Zurücksetzen', 'reset-yes')); break;
+    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; S.stickers = []; S.neu = []; S.base = {}; S.albumSeen = false; save(); closeSheet(true); nav('home', {}, false); break;
     case 'hint-close': S.hintClosed = true; save(); refreshInstall(); break;
     case 'install': {
       const ev = installEvent;
@@ -975,7 +1114,7 @@ document.addEventListener('keydown', e => {
     } else if (e.key === 'Backspace' && Q.puzzle && Q.placed.length) { unplace(Q.placed.length - 1); e.preventDefault(); }
     return;
   }
-  if (/^[a-z' ]$/i.test(e.key)) { typeKey(e.key.toLowerCase()); e.preventDefault(); }
+  if (TYPEABLE.test(e.key)) { typeKey(e.key.toLowerCase()); e.preventDefault(); }
   else if (e.key === 'Backspace') { backspace(); e.preventDefault(); }
 });
 
