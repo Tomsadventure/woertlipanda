@@ -106,8 +106,10 @@ b { font-weight: 800; }
 .hero {
   position: relative; display: flex; align-items: flex-end; gap: 8px; margin: 10px 0 24px; padding: 26px 26px 26px 10px;
   border-radius: var(--r-lg); overflow: hidden; min-height: 290px; box-shadow: var(--lift);
-  background: var(--bamboo-pattern) 0 0 / 160px 200px, linear-gradient(160deg, #8BCB72, var(--bamboo) 55%, #4E9E45);
+  background: var(--bamboo-pattern) 0 0 / 160px 200px, linear-gradient(160deg, var(--u-hi, #8BCB72), var(--u, var(--bamboo)) 55%, var(--u-lo, #4E9E45));
 }
+/* Kopf und «Üben mit Bao» in der Farbe der gewählten Unit (Units.csv, wie die Unit-Karte darunter); --u-* setzt homeHTML */
+.hero .btn.primary { background: var(--u, var(--bamboo)); box-shadow: 0 5px 0 var(--u-deep, var(--bamboo-deep)), 0 12px 24px rgba(0, 0, 0, .16); }
 .hero-bao { position: relative; z-index: 1; flex: 0 0 auto; width: clamp(150px, 28vw, 250px); margin-bottom: -26px; }
 .hero-bao img { width: 100%; filter: drop-shadow(0 8px 10px rgba(20, 50, 10, .25)); transform-origin: 50% 100%; }
 .bubble { position: relative; z-index: 1; flex: 1; align-self: center; background: var(--card); border-radius: var(--r-lg); padding: 22px 24px; box-shadow: 0 10px 30px rgba(20, 50, 10, .2); }

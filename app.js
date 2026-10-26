@@ -9,6 +9,13 @@ const UNIT = Object.fromEntries(D.units.map(u => [u.n, u]));
 const STICKER = Object.fromEntries(D.stickers.map(s => [s.id, s]));
 const ACTIVE = D.units.filter(u => u.aktiv);
 const img = name => `img/${name}.webp`;
+// Farbe mischen: t = 0 … 1 Richtung `to` (hell = heller, #000000 = dunkler) – für den Unit-farbigen Kopf der Startseite;
+// oben links mit warmem Hellgelb statt Weiss, damit der Verlauf leuchtet wie früher das feste Grün (#8BCB72)
+const mix = (hex, to, t) => '#' + [1, 3, 5].map(i => {
+  const a = parseInt(hex.substr(i, 2), 16), b = parseInt(to.substr(i, 2), 16);
+  return Math.round(a + (b - a) * t).toString(16).padStart(2, '0');
+}).join('');
+const unitColors = u => `--u:${u.farbe};--u-hi:${mix(u.farbe, '#fff3b0', .3)};--u-lo:${mix(u.farbe, '#000000', .13)};--u-deep:${mix(u.farbe, '#000000', .3)}`;
 
 /* ================================================================ Speicher */
 const KEY = 'woertlipanda.v1';
@@ -367,7 +374,7 @@ function homeHTML() {
         <button class="icon-btn" data-act="settings" aria-label="Einstellungen">${ICON.gear}</button>
       </div>
     </header>
-    <section class="hero">
+    <section class="hero" style="${unitColors(u)}">
       <button class="hero-bao" data-act="bao" aria-label="Bao antippen"><img src="${img('bao_hallo')}" alt="Bao, der Panda, winkt"></button>
       <div class="bubble">
         <p class="bubble-hi" lang="en">Hi${nm ? ` ${esc(nm)}` : ''}! I'm Bao.</p>
