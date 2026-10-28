@@ -9,12 +9,13 @@ const UNIT = Object.fromEntries(D.units.map(u => [u.n, u]));
 const STICKER = Object.fromEntries(D.stickers.map(s => [s.id, s]));
 const ACTIVE = D.units.filter(u => u.aktiv);
 const img = name => `img/${name}.webp`;
-/* Sammelbuch: Seite 0 = Umschlag, 1 = »Dieses Buch gehört«, 2 = Titelseite, 3–30 = 14 gemalte Doppelseiten (neue kommen immer ans Ende,
+/* Sammelbuch: Seite 0 = Umschlag, 1 = »Dieses Buch gehört«, 2 = Titelseite, 3–36 = 17 gemalte Doppelseiten (neue kommen immer ans Ende,
    damit eingeklebte Sticker auf ihren Seiten bleiben) */
 const SZENEN = [['bambus', 'Im Bambuswald'], ['meer', 'Am Meer'], ['berge', 'In den Bergen'], ['unterwasser', 'Unter Wasser'],
   ['winter', 'Im Winter'], ['nacht', 'In der Nacht'], ['burg', 'In der Burg'], ['gipfel', 'Auf dem Gipfel'],
   ['haus', 'Zu Hause'], ['see', 'Am See'], ['insel', 'Auf der Insel'], ['regen', 'Im Regen'], ['buehne', 'Auf der Bühne'],
-  ['weihnachten', 'An Weihnachten']];
+  ['weihnachten', 'An Weihnachten'], ['herbst', 'Im Herbst'], ['wanderweg', 'Auf dem Wanderweg'],
+  ['garten', 'Im Garten']];
 const BUCH_SEITEN = 3 + 2 * SZENEN.length;
 // Farbe mischen: t = 0 … 1 Richtung `to` (hell = heller, #000000 = dunkler) – für den Unit-farbigen Kopf der Startseite;
 // oben links mit warmem Hellgelb statt Weiss, damit der Verlauf leuchtet wie früher das feste Grün (#8BCB72)
