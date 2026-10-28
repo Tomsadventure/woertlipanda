@@ -52,6 +52,7 @@ function load() {
     buch: buchLaden(d.buch),                                  // Sammelbuch: { placed: [{ s, p, x, y, r }], p, seen }
     albumSeen: !!d.albumSeen,
     waldSeen: !!d.waldSeen,
+    koaSeen: !!d.koaSeen,                                     // Koa hat sich schon vorgestellt (erstes Mal in Unit 3)
     hintClosed: !!d.hintClosed,
     installed: !!d.installed,
   };
@@ -273,7 +274,22 @@ const voiceOn = () => S.settings.voice;
 function bao(names, append) { if (voiceOn()) Sound.say(names, append); }
 const rnd = n => 1 + Math.floor(Math.random() * n);
 const pad2 = n => String(n).padStart(2, '0');
-const line = { hallo: () => `bao_hallo_${pad2(rnd(3))}`, lob: () => `bao_lob_${pad2(rnd(12))}`, fast: () => `bao_fast_${pad2(rnd(4))}`, fertig: () => `bao_fertig_${pad2(rnd(3))}`, los: () => `bao_los_${pad2(rnd(2))}` };
+/* Koa, der Koala (Baos bester Freund; Units mit Freund=Koa in Units.csv, ab Unit 3): er hilft abwechselnd mit Bao.
+   helper = wer gerade hilft – sein Bild oben in der Übung und seine Stimme beim Loben, Trösten und am Schluss.
+   Koa hat eigene Zeilen koa_* (Saetze.csv); alles andere (auch alle Wörter) spricht Bao. */
+const koaUnit = (n = S.unit) => !!(UNIT[n] && UNIT[n].koa);
+let helper = 'bao';
+const koaHilft = () => helper === 'koa' && koaUnit();
+const KOA_N = { hallo: 3, los: 2, lob: 8, fast: 3, fertig: 3 };
+const KOA_EIGEN = ['bao_loesung', 'bao_serie_3', 'bao_serie_5', 'bao_serie_10', 'bao_perfekt', 'bao_sticker', 'bao_sticker_glitzer'];
+const sprecher = (k, n) => (koaHilft() ? `koa_${k}_${pad2(rnd(KOA_N[k]))}` : `bao_${k}_${pad2(rnd(n))}`);
+const line = { hallo: () => sprecher('hallo', 3), lob: () => sprecher('lob', 12), fast: () => sprecher('fast', 4), fertig: () => sprecher('fertig', 3), los: () => sprecher('los', 2) };
+/* eine feste Zeile von Bao in Koas Fassung, wenn Koa gerade hilft (bao_loesung -> koa_loesung); Posen genauso */
+const own = n => (koaHilft() && KOA_EIGEN.includes(n) ? n.replace(/^bao_/, 'koa_') : n);
+const posenBild = p => (koaHilft() ? p.replace(/^bao_/, 'koa_') : p);
+/* Bild von Bao allein bzw. in Koa-Units von Bao und Koa zusammen (bao_koa_hallo, bao_koa_jubel) */
+const duo = (p, n = S.unit) => (koaUnit(n) ? p.replace(/^bao_/, 'bao_koa_') : p);
+const duoAlt = (n = S.unit) => (koaUnit(n) ? 'Bao, der Panda, und Koa, der Koala' : 'Bao, der Panda');
 function sayWord(id, slow) { Sound.say(slow ? `${id}_slow` : id); }
 /* Buchstabieren: die englischen Buchstabennamen nacheinander, zwischen Wörtern (und bei »left/right«) eine Pause */
 function spell(id) {
@@ -381,7 +397,7 @@ function stickerToast() {
 }
 function celebrateSticker(ids) {
   sfx.sticker();
-  bao([{ pause: 200 }, ids.some(id => STICKER[id].art === 'glitzer') ? 'bao_sticker_glitzer' : 'bao_sticker'], true);
+  bao([{ pause: 200 }, own(ids.some(id => STICKER[id].art === 'glitzer') ? 'bao_sticker_glitzer' : 'bao_sticker')], true);
 }
 
 /* ------------------------------------------------------------------ Start */
@@ -410,9 +426,9 @@ function homeHTML() {
       </div>
     </header>
     <section class="hero" style="${unitColors(u)}">
-      <button class="hero-bao" data-act="bao" aria-label="Bao antippen"><img src="${img('bao_hallo')}" alt="Bao, der Panda, winkt"></button>
+      <button class="hero-bao ${koaUnit() ? 'duo' : ''}" data-act="bao" aria-label="${koaUnit() ? 'Bao und Koa' : 'Bao'} antippen"><img src="${img(duo('bao_hallo'))}" alt="${duoAlt()} ${koaUnit() ? 'winken' : 'winkt'}"></button>
       <div class="bubble">
-        <p class="bubble-hi" lang="en">Hi${nm ? ` ${esc(nm)}` : ''}! I'm Bao.</p>
+        <p class="bubble-hi" lang="en">Hi${nm ? ` ${esc(nm)}` : ''}! ${koaUnit() ? "We're Bao and Koa." : "I'm Bao."}</p>
         <p>Wir üben die Wörter von <b>${u.titel}</b>: ${esc(u.thema)}.</p>
         <button class="btn primary big" data-act="start-bao"><span><b>Üben mit Bao</b><small>${sessionPreview()}</small></span>${ICON.next}</button>
         ${nextStickerHTML()}
@@ -479,7 +495,8 @@ function startTasks(mode, list) {
   S.round++; save();
   Q = { mode, list, i: 0, tries: 0, hinted: false, input: '', placed: [], streak: 0, maxStreak: 0, results: [], before: {}, locked: false, extra: 0 };
   unitWords(S.unit).forEach(w => { Q.before[w.id] = st(w.id).box; });
-  Sound.preload([...new Set(list.flatMap(t => [t.id]))].concat(['bao_lob_01', 'bao_lob_02', 'bao_lob_03', 'bao_fast_01', 'bao_fast_02', 'bao_loesung']));
+  Sound.preload([...new Set(list.flatMap(t => [t.id]))].concat(['bao_lob_01', 'bao_lob_02', 'bao_lob_03', 'bao_fast_01', 'bao_fast_02', 'bao_loesung'],
+    koaUnit() ? ['koa_lob_01', 'koa_lob_02', 'koa_lob_03', 'koa_fast_01', 'koa_fast_02', 'koa_loesung'] : []));
   [...new Set(list.map(t => t.id))].forEach(id => { new Image().src = img(id); });
   nav('task');
   const intro = mode.typ === 'test' ? 'bao_modus_test' : mode.typ === 'drill' ? MODE_LINE[mode.drill] : line.los();
@@ -513,7 +530,7 @@ function taskShellHTML() {
 function setBao(pose) {
   const el = document.getElementById('bao');
   if (!el) return;
-  el.src = img(pose);
+  el.src = img(posenBild(pose));                                     // in Koa-Units je nach helper Koas Pose
   el.classList.remove('bounce', 'wobble'); void el.offsetWidth;
   if (!reduced()) el.classList.add(pose === 'bao_jubel' ? 'bounce' : pose === 'bao_mut' ? 'wobble' : 'x');
 }
@@ -540,6 +557,7 @@ const picHTML = (id, cls = '') => `<img class="pic ${cls}" src="${img(id)}" alt=
 function showTask() {
   const t = cur(), w = WORD[t.id], card = document.getElementById('qcard'), foot = document.getElementById('qfoot');
   Q.tries = 0; Q.hinted = false; Q.input = ''; Q.placed = []; Q.locked = false;
+  helper = koaUnit() && Q.i % 2 === 1 ? 'koa' : 'bao';             // abwechselnd; die erste Aufgabe (mit Baos Einleitung) Bao
   setBao('bao_denkt');
   updateLeaves();
   card.className = `qcard k-${t.kind}`;
@@ -560,6 +578,7 @@ function showTask() {
   }
   if (t.kind === 'waehlen_en') {
     const ch = L.choices(unitWords(w.unit), w);
+    card.classList.toggle('lang', ch.some(c => c.en.length > 16));     // lange Antworten: auf kleinen Handys kleineres Bild (style.css)
     card.innerHTML = `<p class="ask">Wie heisst das auf Englisch?</p>${picHTML(w.id)}<p class="de big">${de(w.de)}</p>
       <div class="fb" id="fb" aria-live="polite"></div>
       <div class="grid4 words">${ch.map(c => `<button class="opt word-opt" data-act="choice" data-id="${c.id}" lang="en">${show(c.en)}</button>`).join('')}</div>`;
@@ -716,7 +735,7 @@ function right(t) {
   // Das richtige Wort nochmals hören (ausser es wurde gerade vorgelesen), dann Lob
   const speakWord = !['karte', 'hoeren', 'waehlen_de'].includes(t.kind);
   Sound.say(speakWord ? [t.id] : []);
-  bao([{ pause: 150 }, serie || line.lob()], true);
+  bao([{ pause: 150 }, serie ? own(serie) : line.lob()], true);
   timer = setTimeout(advance, speakWord ? 2000 : 1300);
 }
 /* Falsch: beim 1. Mal »nochmal« (retry), beim 2. Mal Lösung (solve) und »Weiter«. Im Wörtlitest gibt es nur einen Versuch. */
@@ -747,7 +766,7 @@ function wrong(t, solve, retry, msg) {
   setBao('bao_mut');
   if (solve) solve();
   if (fb) { fb.className = 'fb soft'; fb.innerHTML = 'So heisst es richtig:'; }
-  Sound.say([...(voiceOn() ? ['bao_loesung'] : []), t.id]);
+  Sound.say([...(voiceOn() ? [own('bao_loesung')] : []), t.id]);
   // später in der Runde nochmals (höchstens 3 Wiederholungen)
   if (!t.repeat && Q.extra < 3 && Q.mode.typ !== 'test') { Q.list.push(Object.assign({}, t, { repeat: true, kind: t.kind === 'tippen' ? L.spellKind(WORD[t.id], 3, 'auto') : t.kind })); Q.extra++; }
   document.getElementById('qfoot').innerHTML = `<button class="btn primary big" data-act="next" id="next-btn"><span><b>Weiter</b></span>${ICON.next}</button>`;
@@ -786,10 +805,11 @@ function finish() {
     test100: Q.mode.typ === 'test' && res.total >= 10 && firstRight === res.total });
   save();
   Q = null;
+  helper = koaUnit() && S.round % 2 === 1 ? 'koa' : 'bao';        // wer am Schluss lobt: von Runde zu Runde abwechselnd
   nav('result', { res });
   sfx.done();
   if (!reduced()) confetti(res.total && firstRight === res.total ? 70 : 40);
-  bao([res.total && firstRight === res.total ? 'bao_perfekt' : line.fertig(), { pause: 300 }]);
+  bao([res.total && firstRight === res.total ? own('bao_perfekt') : line.fertig(), { pause: 300 }]);
   if (res.stickers.length) setTimeout(() => celebrateSticker(res.stickers), 900);
   else if (res.mode.typ === 'test' && res.mistakes.length) bao('bao_test_ueben', true);
   else if (newGrown.length) bao(grown(S.unit) === words.length ? 'bao_wald_voll' : 'bao_bambus', true);
@@ -801,7 +821,7 @@ function resultHTML(res) {
   const msg = !res.total ? 'Gut gemacht!' : pct === 1 ? (isTest ? 'Alles richtig – super!' : 'Alles auf Anhieb richtig!') : pct >= 0.8 ? 'Super gemacht!' : pct >= 0.5 ? 'Gut gemacht!' : 'Geschafft! Übung macht den Panda stark.';
   const again = res.mode.typ === 'bao' ? 'start-bao' : isTest ? 'mode' : 'mode';
   return `<div class="screen result">
-    <div class="res-top"><img class="res-bao" src="${img('bao_jubel')}" alt="Bao jubelt">
+    <div class="res-top"><img class="res-bao ${koaUnit() ? 'duo' : ''}" src="${img(duo('bao_jubel'))}" alt="${duoAlt()} ${koaUnit() ? 'jubeln' : 'jubelt'}">
       <div class="res-text"><h1>${msg}</h1>
         ${res.total ? `<p class="res-count"><b>${res.firstRight}</b> von ${res.total} ${isTest ? 'richtig geschrieben' : 'beim ersten Mal richtig'}</p>` : ''}
         ${isTest ? `<p class="res-note">${res.total ? Math.round(100 * pct) : 0} % – ${pct >= 0.9 ? 'bereit für den Test in der Schule!' : pct >= 0.7 ? 'fast bereit. Übe die Wörter unten nochmals.' : 'übe die Wörter unten mit Bao, dann nochmals testen.'}</p>` : ''}
@@ -909,7 +929,7 @@ function flip(i) {
   }, 1300);
 }
 const memDoneHTML = neu => `<div class="sheet-head"><h2>Alle Paare gefunden!</h2></div><div class="sheet-body center">
-  ${neu.length ? newStickersHTML(neu) : `<img class="sheet-bao" src="${img('bao_jubel')}" alt="">`}<p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.</p>
+  ${neu.length ? newStickersHTML(neu) : `<img class="sheet-bao ${koaUnit() ? 'duo' : ''}" src="${img(duo('bao_jubel'))}" alt="">`}<p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.</p>
   <div class="confirm-actions"><button class="btn" data-act="home">Übersicht</button><button class="btn primary" data-act="mode" data-mode="memory">${ICON.again}<span>Nochmal</span></button></div></div>`;
 
 /* ----------------------------------------------------------- Bambuswald */
@@ -955,7 +975,7 @@ function albumHTML() {
     <header class="bar"><button class="icon-btn" data-act="home" aria-label="Zurück">${ICON.back}</button><h1 class="bar-title">Stickeralbum</h1><span class="count">${have.size}/${D.stickers.length}</span></header>
     ${ACTIVE.length > 1 ? `<div class="seg album-seg" role="radiogroup" aria-label="Albumseite">${ACTIVE.map(x => `<button role="radio" aria-checked="${x.n === n}" data-act="album-page" data-v="${x.n}">${x.titel}${D.stickers.some(s => s.unit === x.n && neu.has(s.id)) && x.n !== n ? ' •' : ''}</button>`).join('')}</div>` : ''}
     ${buchKnopfHTML('small', 'Ins Sammelbuch einkleben')}
-    <section class="album-top" style="--u:${u.farbe}"><img class="album-bao" src="${img(full ? 'bao_jubel' : 'bao_hallo')}" alt="Bao">
+    <section class="album-top" style="--u:${u.farbe}"><img class="album-bao ${koaUnit(n) ? 'duo' : ''}" src="${img(duo(full ? 'bao_jubel' : 'bao_hallo', n))}" alt="${duoAlt(n)}">
       <div><h2 class="album-unit">${u.titel} <span>${esc(u.thema)}</span></h2>
       <p class="album-intro">Jedes Wort bringt bis zu 5 Lernpunkte – je besser du es kannst, desto mehr. Etwa alle ${step} Lernpunkte gibt es einen neuen Sticker. Sind alle Wörter sicher, ist die Seite voll. Glitzer-Sticker gibt es für besondere Leistungen.</p>
       ${nextStickerHTML('static', n)}</div></section>
@@ -1509,7 +1529,7 @@ function onClick(e) {
       sfx.tap();
       const t = document.querySelector('.hero-bao img');
       if (t && !reduced()) { t.classList.remove('bounce'); void t.offsetWidth; t.classList.add('bounce'); }
-      Sound.say(line.hallo());
+      Sound.say([`bao_hallo_${pad2(rnd(3))}`].concat(koaUnit() ? [{ pause: 250 }, `koa_hallo_${pad2(rnd(3))}`] : []));
       break;
     }
     case 'start-bao': sfx.tap(); startBao(); break;
@@ -1522,7 +1542,10 @@ function onClick(e) {
       else startDrill(m);
       break;
     }
-    case 'unit': S.unit = +b.dataset.unit; save(); nav('home', {}, false); break;
+    case 'unit':
+      S.unit = +b.dataset.unit; save(); nav('home', {}, false);
+      if (koaUnit() && !S.koaSeen) { S.koaSeen = true; save(); bao([{ pause: 300 }, 'koa_hallo_01']); }   // Koa stellt sich vor
+      break;
     case 'wald':
       sfx.tap(); nav('wald');
       if (!S.waldSeen) { S.waldSeen = true; save(); bao('bao_wald'); }
@@ -1579,7 +1602,7 @@ function onClick(e) {
     }
     case 'test-sound': sfx.right(3); setTimeout(() => Sound.say(['bao_hallo_02', { pause: 200 }, 'u1_smell']), 350); break;
     case 'reset': openSheet('reset', confirmHTML('Alles zurücksetzen?', 'Der ganze Bambuswald, alle Lernstände, alle Sticker und das Sammelbuch werden gelöscht. Das lässt sich nicht rückgängig machen.', 'Zurücksetzen', 'reset-yes')); break;
-    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; S.stickers = []; S.neu = []; S.base = {}; S.buch = buchLaden(null); S.albumSeen = false; save(); closeSheet(true); nav('home', {}, false); break;
+    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; S.stickers = []; S.neu = []; S.base = {}; S.buch = buchLaden(null); S.albumSeen = false; S.koaSeen = false; save(); closeSheet(true); nav('home', {}, false); break;
     case 'hint-close': S.hintClosed = true; save(); refreshInstall(); break;
     case 'buch': sfx.tap(); oeffneBuch(); break;
     case 'buch-zu': sfx.tap(); nav(BK.from); break;
@@ -1637,7 +1660,8 @@ document.addEventListener('keydown', e => {
 /* ================================================================== Start */
 try { history.replaceState({ name: 'home' }, ''); } catch (e) { /* file:// */ }
 render();
-['bao_denkt', 'bao_jubel', 'bao_mut'].forEach(n => { new Image().src = img(n); });
+['bao_denkt', 'bao_jubel', 'bao_mut'].concat(ACTIVE.some(u => u.koa) ? ['koa_denkt', 'koa_jubel', 'koa_mut', 'bao_koa_jubel'] : [])
+  .forEach(n => { new Image().src = img(n); });
 
 if ('serviceWorker' in navigator && window.BUILD !== 'dev' && (location.protocol === 'https:' || ['localhost', '127.0.0.1'].includes(location.hostname))) {
   const hadController = !!navigator.serviceWorker.controller;

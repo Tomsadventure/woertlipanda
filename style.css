@@ -112,6 +112,7 @@ b { font-weight: 800; }
 .hero .btn.primary { background: var(--u, var(--bamboo)); box-shadow: 0 5px 0 var(--u-deep, var(--bamboo-deep)), 0 12px 24px rgba(0, 0, 0, .16); }
 .hero-bao { position: relative; z-index: 1; flex: 0 0 auto; width: clamp(150px, 28vw, 250px); margin-bottom: -26px; }
 .hero-bao img { width: 100%; filter: drop-shadow(0 8px 10px rgba(20, 50, 10, .25)); transform-origin: 50% 100%; }
+.hero-bao.duo { width: clamp(200px, 36vw, 330px); }              /* Bao und Koa zusammen (Unit 3) sind breiter */
 .bubble { position: relative; z-index: 1; flex: 1; align-self: center; background: var(--card); border-radius: var(--r-lg); padding: 22px 24px; box-shadow: 0 10px 30px rgba(20, 50, 10, .2); }
 .bubble::before { content: ''; position: absolute; left: -14px; top: 46%; width: 30px; height: 30px; background: var(--card); transform: rotate(45deg); border-radius: 6px; }
 .bubble p { margin: 0 0 14px; font-size: 19px; line-height: 1.35; color: var(--ink-soft); font-weight: 700; position: relative; }
@@ -262,11 +263,15 @@ body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height:
 /* niedrige Bildschirme: Bilder kleiner, damit Tastatur und Antwort Platz haben */
 @media (max-height: 760px) { .pic { width: clamp(110px, 24vh, 180px); } .pic.big { width: clamp(150px, 30vh, 240px); } .pic.side { width: clamp(80px, 14vh, 120px); } }
 @media (max-height: 620px) { .k-tippen .pic.side { display: none; } }
+/* Wählen (Englisch) mit langen Antworten wie «This picture makes me feel …» (dreizeilig, Unit 3): auf niedrigen Handys ein
+   kleineres Bild, damit alle vier Antworten auf den Bildschirm passen (gefunden von den Browser-Tests 2026-10-28) */
+@media (max-height: 760px) { .k-waehlen_en.lang .pic { width: clamp(90px, 17vh, 130px); } }
 
 /* ------------------------------------------------------------ Ergebnis */
 .result { text-align: center; padding-top: max(24px, env(safe-area-inset-top)); }
 .res-top { display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap; }
 .res-bao { width: clamp(130px, 24vw, 210px); animation: bounce 1s ease-out .2s both; }
+.res-bao.duo { width: clamp(170px, 32vw, 280px); }
 .res-text h1 { margin: 0 0 4px; font-size: clamp(28px, 5vw, 40px); font-weight: 800; line-height: 1.1; }
 .res-count { margin: 6px 0 0; font-size: 19px; color: var(--ink-soft); font-weight: 700; }
 .res-count b { color: var(--ink); }
@@ -344,6 +349,7 @@ body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height:
 .album-seg { margin: 4px 0 10px; background: var(--card); box-shadow: var(--lift-sm); }
 .album-top { display: flex; align-items: center; gap: 16px; margin: 6px 0 8px; padding: 14px 16px; border-radius: var(--r-md); background: var(--card); box-shadow: var(--lift-sm); border-left: 8px solid var(--u); }
 .album-bao { width: clamp(90px, 16vw, 140px); flex: none; }
+.album-bao.duo { width: clamp(120px, 22vw, 190px); }
 .album-top > div { flex: 1; min-width: 0; }
 .album-unit { margin: 0 0 6px; font-size: 21px; }
 .album-unit span { color: var(--ink-soft); font-size: 17px; margin-left: 4px; }
@@ -378,6 +384,7 @@ body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height:
 .sheet-head h2 { margin: 0; font-size: 24px; font-weight: 800; flex: 1; }
 .sheet-body.center { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
 .sheet-bao { width: 150px; }
+.sheet-bao.duo { width: 200px; }
 .word-sheet .pic { width: min(300px, 70vw); }
 .set-group { margin: 14px 0 20px; }
 .set-group h3 { margin: 0 0 8px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); }
@@ -429,6 +436,7 @@ body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height:
   .pill b { position: absolute; top: -7px; right: -11px; font-size: 12px; padding: 1px 6px; border-radius: 9px; }
   .hero { flex-direction: column; align-items: center; padding: 18px 16px; min-height: 0; }
   .hero-bao { width: 160px; margin: 0 0 -20px; order: -1; }
+  .hero-bao.duo { width: 220px; }
   .bubble { width: 100%; }
   .bubble::before { left: 50%; top: -12px; margin-left: -15px; }
   .btn.big { width: 100%; justify-content: space-between; }

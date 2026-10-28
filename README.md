@@ -1,8 +1,8 @@
 # Wörtli-Panda
 
-Englisch-Wörtli der 4. Klasse (Schweiz) lernen mit Bao, dem Panda: Lernkarten, Hören, Wählen, Schreiben (Puzzle und Tastatur),
-Memory und Wörtlitest. Jedes sichere Wort lässt im Bambuswald einen Bambus wachsen, und für Lernpunkte gibt es Bao-Sticker
-fürs Stickeralbum. Fürs iPad, iPhone und den PC;
+Englisch-Wörtli der 4. Klasse (Schweiz) lernen mit Bao, dem Panda (ab Unit 3 mit seinem Freund Koa, dem Koala): Lernkarten,
+Hören, Wählen, Schreiben (Puzzle und Tastatur), Memory und Wörtlitest. Jedes sichere Wort lässt im Bambuswald einen Bambus
+wachsen, und für Lernpunkte gibt es Sticker fürs Stickeralbum und das Sammelbuch. Fürs iPad, iPhone und den PC;
 läuft auch ohne Internet (Safari → Teilen → «Zum Home-Bildschirm»).
 
 Dieser Ordner wird von `Scripts/bauen.py` im Projekt `Woertlipanda` erzeugt – hier nichts von Hand ändern, es wird überschrieben.

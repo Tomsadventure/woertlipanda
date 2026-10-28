@@ -6,35 +6,40 @@ window.DATEN = {
    "titel": "Unit 1",
    "thema": "Sinne und Essen",
    "farbe": "#5BA35B",
-   "aktiv": true
+   "aktiv": true,
+   "koa": false
   },
   {
    "n": 2,
    "titel": "Unit 2",
    "thema": "Berufe und Stadt",
    "farbe": "#D9534F",
-   "aktiv": true
+   "aktiv": true,
+   "koa": false
   },
   {
    "n": 3,
    "titel": "Unit 3",
    "thema": "Farben und Kunst",
-   "farbe": "#E8A33D",
-   "aktiv": false
+   "farbe": "#D9822B",
+   "aktiv": true,
+   "koa": true
   },
   {
    "n": 4,
    "titel": "Unit 4",
    "thema": "Tiere im Wald",
    "farbe": "#4F86C6",
-   "aktiv": false
+   "aktiv": false,
+   "koa": false
   },
   {
    "n": 5,
    "titel": "Unit 5",
    "thema": "Verkehrsmittel",
    "farbe": "#9B4F96",
-   "aktiv": false
+   "aktiv": false,
+   "koa": false
   }
  ],
  "woerter": [
@@ -681,6 +686,320 @@ window.DATEN = {
    "antworten": [
     "quiet"
    ]
+  },
+  {
+   "id": "u3_a_yellow_square",
+   "unit": 3,
+   "en": "a yellow square",
+   "de": "ein gelbes Quadrat",
+   "typ": "phrase",
+   "antworten": [
+    "a yellow square"
+   ]
+  },
+  {
+   "id": "u3_a_red_triangle",
+   "unit": 3,
+   "en": "a red triangle",
+   "de": "ein rotes Dreieck",
+   "typ": "phrase",
+   "antworten": [
+    "a red triangle"
+   ]
+  },
+  {
+   "id": "u3_a_green_circle",
+   "unit": 3,
+   "en": "a green circle",
+   "de": "ein grüner Kreis",
+   "typ": "phrase",
+   "antworten": [
+    "a green circle"
+   ]
+  },
+  {
+   "id": "u3_a_blue_rectangle",
+   "unit": 3,
+   "en": "a blue rectangle",
+   "de": "ein blaues Rechteck",
+   "typ": "phrase",
+   "antworten": [
+    "a blue rectangle"
+   ]
+  },
+  {
+   "id": "u3_an_orange_stripe",
+   "unit": 3,
+   "en": "an orange stripe",
+   "de": "ein oranger Streifen",
+   "typ": "phrase",
+   "antworten": [
+    "an orange stripe"
+   ]
+  },
+  {
+   "id": "u3_a_purple_shape",
+   "unit": 3,
+   "en": "a purple shape",
+   "de": "eine violette Form",
+   "typ": "phrase",
+   "antworten": [
+    "a purple shape"
+   ]
+  },
+  {
+   "id": "u3_brown",
+   "unit": 3,
+   "en": "brown",
+   "de": "braun",
+   "typ": "wort",
+   "antworten": [
+    "brown"
+   ]
+  },
+  {
+   "id": "u3_grey",
+   "unit": 3,
+   "en": "grey",
+   "de": "grau",
+   "typ": "wort",
+   "antworten": [
+    "grey"
+   ]
+  },
+  {
+   "id": "u3_primary_secondary_colours",
+   "unit": 3,
+   "en": "primary/secondary colours",
+   "de": "Primär-/Sekundärfarben, Grund-/Mischfarben",
+   "typ": "phrase",
+   "antworten": [
+    "primary/secondary colours",
+    "secondary/primary colours",
+    "primary and secondary colours",
+    "primary colours and secondary colours",
+    "primary colours/secondary colours",
+    "primary colours, secondary colours"
+   ]
+  },
+  {
+   "id": "u3_round",
+   "unit": 3,
+   "en": "round",
+   "de": "rund",
+   "typ": "wort",
+   "antworten": [
+    "round"
+   ]
+  },
+  {
+   "id": "u3_in_the_middle",
+   "unit": 3,
+   "en": "in the middle",
+   "de": "in der Mitte",
+   "typ": "phrase",
+   "antworten": [
+    "in the middle"
+   ]
+  },
+  {
+   "id": "u3_on_the_left_right_side",
+   "unit": 3,
+   "en": "on the left/right side",
+   "de": "auf der linken/rechten Seite, links/rechts",
+   "typ": "phrase",
+   "antworten": [
+    "on the left/right side",
+    "on the right/left side",
+    "on the left or right side",
+    "on the left side/right side",
+    "on the left side/on the right side",
+    "on the left side, on the right side"
+   ]
+  },
+  {
+   "id": "u3_at_the_top",
+   "unit": 3,
+   "en": "at the top",
+   "de": "am oberen Ende, oben",
+   "typ": "phrase",
+   "antworten": [
+    "at the top"
+   ]
+  },
+  {
+   "id": "u3_at_the_bottom",
+   "unit": 3,
+   "en": "at the bottom",
+   "de": "am unteren Ende, unten",
+   "typ": "phrase",
+   "antworten": [
+    "at the bottom"
+   ]
+  },
+  {
+   "id": "u3_small_smaller",
+   "unit": 3,
+   "en": "small, smaller",
+   "de": "klein, kleiner",
+   "typ": "wort",
+   "antworten": [
+    "small, smaller",
+    "small/smaller",
+    "small and smaller"
+   ]
+  },
+  {
+   "id": "u3_big_bigger",
+   "unit": 3,
+   "en": "big, bigger",
+   "de": "gross, grösser",
+   "typ": "wort",
+   "antworten": [
+    "big, bigger",
+    "big/bigger",
+    "big and bigger"
+   ]
+  },
+  {
+   "id": "u3_a_famous_artist",
+   "unit": 3,
+   "en": "a famous artist",
+   "de": "ein berühmter Künstler, eine berühmte Künstlerin",
+   "typ": "phrase",
+   "antworten": [
+    "a famous artist"
+   ]
+  },
+  {
+   "id": "u3_a_colourful_picture",
+   "unit": 3,
+   "en": "a colourful picture",
+   "de": "ein farbiges/buntes Bild",
+   "typ": "phrase",
+   "antworten": [
+    "a colourful picture"
+   ]
+  },
+  {
+   "id": "u3_a_black_and_white_drawing",
+   "unit": 3,
+   "en": "a black and white drawing",
+   "de": "eine Schwarz-Weiss-Zeichnung",
+   "typ": "phrase",
+   "antworten": [
+    "a black and white drawing"
+   ]
+  },
+  {
+   "id": "u3_there_is_are",
+   "unit": 3,
+   "en": "There is/are ...",
+   "de": "Es gibt ...",
+   "typ": "satz",
+   "antworten": [
+    "There is/are ..."
+   ]
+  },
+  {
+   "id": "u3_it_is",
+   "unit": 3,
+   "en": "It is ...",
+   "de": "Es ist ...",
+   "typ": "satz",
+   "antworten": [
+    "It is ..."
+   ]
+  },
+  {
+   "id": "u3_you_can_see",
+   "unit": 3,
+   "en": "You can see ...",
+   "de": "Man kann ... sehen.",
+   "typ": "satz",
+   "antworten": [
+    "You can see ..."
+   ]
+  },
+  {
+   "id": "u3_this_picture_makes_me_feel",
+   "unit": 3,
+   "en": "This picture makes me feel ...",
+   "de": "Dieses Bild macht, dass ich mich ... fühle.",
+   "typ": "satz",
+   "antworten": [
+    "This picture makes me feel ..."
+   ]
+  },
+  {
+   "id": "u3_my_favourite_poem",
+   "unit": 3,
+   "en": "my favourite poem",
+   "de": "mein Lieblingsgedicht",
+   "typ": "phrase",
+   "antworten": [
+    "my favourite poem"
+   ]
+  },
+  {
+   "id": "u3_exhibition",
+   "unit": 3,
+   "en": "exhibition",
+   "de": "Ausstellung",
+   "typ": "wort",
+   "antworten": [
+    "exhibition"
+   ]
+  },
+  {
+   "id": "u3_go_to_the_museum",
+   "unit": 3,
+   "en": "go to the museum",
+   "de": "ins Museum gehen",
+   "typ": "phrase",
+   "antworten": [
+    "go to the museum"
+   ]
+  },
+  {
+   "id": "u3_title",
+   "unit": 3,
+   "en": "title",
+   "de": "Titel",
+   "typ": "wort",
+   "antworten": [
+    "title"
+   ]
+  },
+  {
+   "id": "u3_mean",
+   "unit": 3,
+   "en": "mean",
+   "de": "bedeuten, meinen (sagen wollen)",
+   "typ": "wort",
+   "antworten": [
+    "mean"
+   ]
+  },
+  {
+   "id": "u3_describe",
+   "unit": 3,
+   "en": "describe",
+   "de": "beschreiben",
+   "typ": "wort",
+   "antworten": [
+    "describe"
+   ]
+  },
+  {
+   "id": "u3_colour",
+   "unit": 3,
+   "en": "colour",
+   "de": "färben, ausmalen",
+   "typ": "wort",
+   "antworten": [
+    "colour"
+   ]
   }
  ],
  "stickers": [
@@ -1010,6 +1329,198 @@ window.DATEN = {
    "art": "glitzer",
    "titel": "Bao the king of the town",
    "de": "Bao, der König der Stadt",
+   "bedingung": "alle"
+  },
+  {
+   "id": "s3_01",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Hello, Koa",
+   "de": "Hallo, Koa!",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_02",
+   "unit": 3,
+   "art": "normal",
+   "titel": "High five",
+   "de": "Gib mir fünf!",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_03",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Bao on the swing",
+   "de": "Bao auf der Schaukel",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_04",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Koa the knight",
+   "de": "Koa, der Ritter",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_05",
+   "unit": 3,
+   "art": "normal",
+   "titel": "A picnic for two",
+   "de": "Ein Picknick zu zweit",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_06",
+   "unit": 3,
+   "art": "normal",
+   "titel": "A big hug",
+   "de": "Eine grosse Umarmung",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_07",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Koa flies a kite",
+   "de": "Koa lässt einen Drachen steigen",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_08",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Bao the guard",
+   "de": "Bao, die Wache",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_09",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Bao blows bubbles",
+   "de": "Bao macht Seifenblasen",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_10",
+   "unit": 3,
+   "art": "normal",
+   "titel": "The sandcastle",
+   "de": "Die Sandburg",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_11",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Koa on the scooter",
+   "de": "Koa auf dem Trottinett",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_12",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Bao the archer",
+   "de": "Bao, der Bogenschütze",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_13",
+   "unit": 3,
+   "art": "normal",
+   "titel": "A hug in the rain",
+   "de": "Umarmung im Regen",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_14",
+   "unit": 3,
+   "art": "normal",
+   "titel": "The snowman",
+   "de": "Der Schneemann",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_15",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Bao on the trampoline",
+   "de": "Bao auf dem Trampolin",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_16",
+   "unit": 3,
+   "art": "normal",
+   "titel": "King Koa",
+   "de": "König Koa",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_17",
+   "unit": 3,
+   "art": "normal",
+   "titel": "The tree house",
+   "de": "Das Baumhaus",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_18",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Koa has a nap",
+   "de": "Koa macht ein Nickerchen",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_19",
+   "unit": 3,
+   "art": "normal",
+   "titel": "Friends forever",
+   "de": "Freunde für immer",
+   "bedingung": ""
+  },
+  {
+   "id": "s3_g1",
+   "unit": 3,
+   "art": "glitzer",
+   "titel": "Bao and Koa say hello",
+   "de": "Bao und Koa sagen Hallo",
+   "bedingung": "runde1"
+  },
+  {
+   "id": "s3_g2",
+   "unit": 3,
+   "art": "glitzer",
+   "titel": "Koa wins gold",
+   "de": "Koa gewinnt Gold",
+   "bedingung": "test100"
+  },
+  {
+   "id": "s3_g3",
+   "unit": 3,
+   "art": "glitzer",
+   "titel": "Down the rainbow",
+   "de": "Die Regenbogen-Rutsche",
+   "bedingung": "serie10"
+  },
+  {
+   "id": "s3_g4",
+   "unit": 3,
+   "art": "glitzer",
+   "titel": "Bao on a unicorn",
+   "de": "Bao auf dem Einhorn",
+   "bedingung": "memory9"
+  },
+  {
+   "id": "s3_g5",
+   "unit": 3,
+   "art": "glitzer",
+   "titel": "Bao and Koa, the dream team",
+   "de": "Bao und Koa, das Traumteam",
    "bedingung": "alle"
   }
  ]
