@@ -880,7 +880,7 @@ function listeHTML() {
 /* ---------------------------------------------------------------- Memory */
 function startMemory() {
   const deck = L.memoryDeck(unitWords(S.unit), 6);
-  Q = { memory: true, deck, open: [], found: new Set(), moves: 0, locked: false };
+  Q = { memory: true, deck, open: [], found: new Set(), moves: 0, locked: false, punkte: 0 };
   deck.forEach(c => { new Image().src = img(c.id); });
   Sound.preload(deck.map(c => c.id));
   nav('memory');
@@ -912,7 +912,11 @@ function flip(i) {
   if (a.id === b.id) {
     Q.found.add(a.id); Q.open = [];
     document.querySelectorAll(`.mcard`).forEach(m => { if (Q.deck[+m.dataset.i].id === a.id) m.classList.add('found'); });
-    if (st(a.id).box === 0) { S.w[a.id] = L.record(st(a.id), 'karte', 'first', S.round, Date.now()); save(); }
+    // Jedes gefundene Paar zählt wie Erkennen (Hören, Wählen): das Wort steigt eine Stufe, höchstens bis 3 – also ein Lernpunkt
+    // (Wunsch 2026-10-30; vorher nur von 0 auf 1). Ein Fehlgriff zählt nicht als Fehler, das ist Gedächtnis, nicht Englisch.
+    const vor = st(a.id).box;
+    S.w[a.id] = L.record(st(a.id), vor === 0 ? 'karte' : 'memory', 'first', S.round, Date.now()); save();
+    Q.punkte += st(a.id).box - vor;
     setTimeout(() => { sfx.right(Q.found.size); if (c.side !== 'wort') sayWord(a.id); }, 250);
     if (Q.found.size === 6) {
       const neu = checkStickers({ unit: S.unit, memory9: Q.moves <= 9 });
@@ -929,7 +933,9 @@ function flip(i) {
   }, 1300);
 }
 const memDoneHTML = neu => `<div class="sheet-head"><h2>Alle Paare gefunden!</h2></div><div class="sheet-body center">
-  ${neu.length ? newStickersHTML(neu) : `<img class="sheet-bao ${koaUnit() ? 'duo' : ''}" src="${img(duo('bao_jubel'))}" alt="">`}<p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.</p>
+  ${neu.length ? newStickersHTML(neu) : `<img class="sheet-bao ${koaUnit() ? 'duo' : ''}" src="${img(duo('bao_jubel'))}" alt="">`}<p class="confirm-text">Du hast ${Q ? Q.moves : ''} Züge gebraucht.<br>
+  ${Q && Q.punkte ? `<b class="mem-punkte">+${Q.punkte} ${Q.punkte === 1 ? 'Lernpunkt' : 'Lernpunkte'}</b>` : 'Diese Wörter kennst du schon gut – mehr Lernpunkte gibt es jetzt beim Schreiben.'}</p>
+  ${nextStickerHTML('wide')}
   <div class="confirm-actions"><button class="btn" data-act="home">Übersicht</button><button class="btn primary" data-act="mode" data-mode="memory">${ICON.again}<span>Nochmal</span></button></div></div>`;
 
 /* ----------------------------------------------------------- Bambuswald */

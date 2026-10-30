@@ -404,6 +404,7 @@ body[data-view="task"] .screen.task[data-kind="hoeren"] { height: 100vh; height:
 .seg button[aria-checked="true"] { background: var(--bamboo); color: #fff; box-shadow: 0 2px 0 var(--bamboo-deep); }
 .version { text-align: center; font-size: 13px; color: var(--ink-soft); margin: 18px 0 6px; }
 .confirm-text { font-size: 18px; line-height: 1.45; font-weight: 700; color: var(--ink-soft); }
+.mem-punkte { color: var(--bamboo-deep); font-size: 22px; }   /* Memory-Ende: so viele Lernpunkte gab es */
 .confirm-actions { display: flex; gap: 12px; justify-content: flex-end; margin: 18px 0 8px; }
 
 /* ------------------------------------------------------------ Bewegung */
