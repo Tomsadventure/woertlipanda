@@ -1,0 +1,184 @@
+/* Wörtli-Panda – Deutsch: Verben mit Mio (verben.js, seit 2026-11-16). Baut auf style.css auf.
+   Mio, der rote Panda: Rostrot. Zeitformen: Präsens grün, Präteritum orange, Perfekt blau. */
+:root { --mio: #C4532B; --mio-hi: #E9925A; --mio-lo: #A9431F; --mio-deep: #8A3618; --mio-tint: #FBE9DF;
+  --z-pr: #3D8838; --z-pr-t: #ECF7E5; --z-pt: #B5621A; --z-pt-t: #FDEFD9; --z-pf: #2F6FB0; --z-pf-t: #E3EFFB; }
+
+/* Kachel auf der Startseite der App */
+.mio-banner { width: 100%; display: flex; align-items: center; gap: 14px; margin: 0 0 22px; padding: 8px 18px 8px 10px; border-radius: var(--r-md); text-align: left;
+  background: var(--bamboo-pattern) 0 0 / 160px 200px, linear-gradient(120deg, var(--mio-hi), var(--mio) 60%, var(--mio-lo)); color: #fff; box-shadow: 0 5px 0 var(--mio-deep), 0 12px 24px rgba(138, 54, 24, .22); }
+.mio-banner:active { transform: translateY(3px); }
+.mio-banner img { width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(60, 20, 0, .3)); flex: none; }
+.mio-banner-t { flex: 1; display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+.mio-banner-t b { font-size: 21px; }
+.mio-banner-t small { font-size: 15px; font-weight: 700; opacity: .95; }
+.mio-banner > .ic { width: 28px; height: 28px; }
+
+/* Startseite des Bereichs */
+.vhero { --u: var(--mio); --u-hi: var(--mio-hi); --u-lo: var(--mio-lo); --u-deep: var(--mio-deep); }
+.vhome .bar-title { flex: 1; min-width: 0; }
+.vbtn2 { margin-top: 12px; min-height: 48px; padding: 6px 16px; border-radius: 24px; background: var(--mio-tint); color: var(--mio-deep); font-weight: 800; font-size: 16px; display: inline-flex; align-items: center; gap: 8px; box-shadow: none; }
+.vbtn2 .ic { width: 20px; height: 20px; }
+.vgruppe { display: flex; padding: 14px 18px; border-radius: var(--r-md); background: var(--card); box-shadow: var(--lift-sm); border-left: 8px solid var(--mio); margin-bottom: 12px; }
+.vgruppe.g2 { border-left-color: var(--z-pf); }
+.vgruppe > div { flex: 1; min-width: 0; }
+.vgruppe h3 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+.vgruppe h3 span { color: var(--ink-soft); font-weight: 700; font-size: 16px; margin-left: 6px; }
+.vgruppe .progress i { background: repeating-linear-gradient(90deg, var(--mio-hi) 0 22px, var(--mio) 22px 24px); }
+.vgruppe.g2 .progress i { background: repeating-linear-gradient(90deg, #7FB2E5 0 22px, var(--z-pf) 22px 24px); }
+.vgruppe .unit-sub { margin: 8px 0 0; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+.vwahl { display: flex; align-items: center; gap: 12px; margin: 18px 0 12px; flex-wrap: wrap; }
+.vwahl > span { font-weight: 800; color: var(--ink-soft); }
+.vwahl .seg { flex: 1; min-width: 240px; background: var(--card); box-shadow: var(--lift-sm); }
+.vwahl .seg button[aria-checked="true"] { background: var(--mio); box-shadow: 0 2px 0 var(--mio-deep); }
+.vmodes { grid-template-columns: repeat(4, 1fr); }
+.vmodes .mode-ic { background: var(--mio-tint); color: var(--mio-deep); }
+.vmodes .mode[data-mode="test"] .mode-ic { background: var(--pink-soft); color: #B9405C; }
+
+/* Zeitformen */
+.vchip { display: inline-block; padding: 3px 12px; border-radius: 12px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+.vchip.z-pr { background: var(--z-pr-t); color: var(--z-pr); }
+.vchip.z-pt { background: var(--z-pt-t); color: var(--z-pt); }
+.vchip.z-pf { background: var(--z-pf-t); color: var(--z-pf); }
+b.z-pr { color: var(--z-pr); }
+b.z-pt { color: var(--z-pt); }
+b.z-pf { color: var(--z-pf); }
+
+/* Verb-Tabelle: je Zeitform ein Block */
+.vinf { margin: 0; font-family: var(--en); font-weight: 700; font-size: clamp(30px, 6vw, 44px); line-height: 1.1; }
+.vk-kopf { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.vgr { padding: 3px 12px; border-radius: 12px; font-weight: 800; font-size: 14px; background: var(--mio-tint); color: var(--mio-deep); }
+.vgr.g2 { background: var(--z-pf-t); color: var(--z-pf); }
+.vtab { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: left; }
+.vtab.eins { grid-template-columns: 1fr; max-width: 420px; }
+.vt-block { border-radius: 16px; padding: 8px 10px 10px; background: var(--z-pr-t); min-width: 0; }
+.vt-block.z-pt { background: var(--z-pt-t); }
+.vt-block.z-pf { background: var(--z-pf-t); }
+.vt-block h4 { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: var(--z-pr); }
+.vt-block.z-pt h4 { color: var(--z-pt); }
+.vt-block.z-pf h4 { color: var(--z-pf); }
+/* Drei Blöcke nebeneinander: die sechs Formen untereinander (ich … sie). Auf Handys stehen die Blöcke untereinander, dann
+   links ich/du/er und rechts wir/ihr/sie – ausser im Perfekt («bin geschwommen» ist dafür zu lang). */
+.vt-grid { display: grid; grid-template-columns: 1fr; gap: 1px 10px; }
+.vt-f { font-family: var(--en); font-size: 17px; line-height: 1.35; }
+.vt-f i { font-style: normal; color: var(--ink-soft); font-size: 14px; }
+.vt-f b { font-weight: 700; }
+.vsaetze { width: 100%; display: flex; flex-direction: column; gap: 2px; margin-top: 2px; }
+.vsaetze.eigen { border-top: 2px dashed var(--line); padding-top: 8px; }
+.vsatz { margin: 0; font-family: var(--en); font-size: 18px; line-height: 1.35; }
+.vsatz.gross { font-size: clamp(24px, 4.6vw, 34px); font-weight: 700; margin: 8px 0 6px; }
+.vsatz.ziel { font-size: clamp(22px, 4.2vw, 30px); font-weight: 700; margin: 4px 0; }
+.vsatz u, .vluecke u { text-decoration: none; border-bottom: 3px solid var(--mio); display: inline-block; line-height: .9; }
+/* im Blatt «Meine Verben» ist es schmal: Blöcke untereinander wie auf dem Handy */
+.sheet-body.vkarte .vtab { grid-template-columns: 1fr; gap: 6px; }
+.sheet-body.vkarte .vt-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, auto); grid-auto-flow: column; }
+.sheet-body.vkarte .vt-block.z-pf .vt-grid { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
+.vkarten .vkarte, .sheet-body.vkarte { gap: 12px; }
+.sheet-body.vkarte { display: flex; flex-direction: column; align-items: center; }
+.vk-n { color: var(--ink-soft); font-size: 16px; font-weight: 700; margin-left: 8px; white-space: nowrap; }
+.vk-nav { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
+.vk-nav .btn.primary, .vresult .btn.primary, .vtask .btn.primary { background: var(--mio); box-shadow: 0 5px 0 var(--mio-deep), 0 12px 24px rgba(138, 54, 24, .2); }
+
+/* Meine Verben (Liste) */
+.vl-h { margin: 14px 2px 6px; font-size: 17px; color: var(--ink-soft); }
+.vl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.vl-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding: 8px 10px 6px 12px; border-radius: 14px; background: var(--card); box-shadow: var(--lift-sm); font-family: var(--en); font-weight: 700; font-size: 18px; }
+.vl-st { display: flex; gap: 5px; align-items: flex-end; }
+.vl-z { display: grid; place-items: end center; padding: 2px 3px 0; border-radius: 6px; }
+.vl-z.z-pr { background: var(--z-pr-t); }
+.vl-z.z-pt { background: var(--z-pt-t); }
+.vl-z.z-pf { background: var(--z-pf-t); }
+.vl-z .bmb { width: 10px; height: 28px; }
+
+/* Aufgaben */
+body[data-view="vtask"] .screen.task { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; gap: 10px; }
+.vzaehler { font-weight: 800; font-size: 17px; color: var(--mio-deep); }
+.vtask .leaves i.now, .vtask .leaves i.ok { background: var(--mio); }
+.vtask .ask { color: var(--mio-deep); background: var(--mio-tint); }
+.vtask .ask .vchip { font-size: 15px; padding: 1px 9px; }
+.vfrage { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.vluecke { margin: 2px 0 4px; font-family: var(--en); font-size: clamp(24px, 4.6vw, 32px); font-weight: 700; }
+.vluecke i, .vpron { font-style: normal; color: var(--ink-soft); font-family: var(--en); font-weight: 700; }
+.vopts .word-opt { font-family: var(--en); }
+.vline { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; }
+.vline .vpron { font-size: clamp(22px, 4vw, 30px); white-space: nowrap; }
+.vtask .typed { min-width: min(100%, 260px); border-color: var(--mio); font-size: clamp(26px, 5vw, 36px); min-height: 60px; }
+.vtask .typed.right { border-color: var(--bamboo); }
+.vtask .typed .caret, .vrow .caret { display: inline-block; width: 3px; height: .9em; background: var(--mio-deep); margin-left: 2px; animation: blink 1.1s steps(2) infinite; vertical-align: -2px; }
+.vloesung { font-family: var(--en); color: var(--bamboo-deep); font-size: 1.15em; }
+.vreihe { width: 100%; max-width: 460px; display: grid; grid-template-columns: 1fr; gap: 5px; }
+.vrow { display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: clamp(36px, 5.6vh, 48px); padding: 2px 12px; border-radius: 12px; border: 3px solid var(--line); background: #fff; text-align: left; font-family: var(--en); font-weight: 700; font-size: clamp(19px, 3.4vw, 24px); }
+.vrow .vpron { font-size: .82em; }
+.vrow .vin { min-width: 0; overflow: hidden; white-space: nowrap; }
+.vrow.aktiv { border-color: var(--mio); box-shadow: 0 0 0 3px var(--mio-tint); }
+.vrow.right { border-color: var(--bamboo); background: var(--bamboo-tint); color: var(--bamboo-deep); }
+.vrow.bad { border-color: var(--berry); background: var(--berry-soft); }
+.vrow.bad .vin { color: var(--berry); }
+.vsoll { color: var(--bamboo-deep); font-size: .9em; white-space: nowrap; }
+.vkbd .k { min-width: 0; }
+.vkbd .k:not(.fn):not(.ok):not(.space) { max-width: 58px; }
+.vzeiten { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 6px; }
+.vzeiten .word-opt { font-family: inherit; font-size: clamp(16px, 3vw, 24px); min-height: 64px; padding: 6px 2px; overflow-wrap: normal; -webkit-hyphens: none; hyphens: none; }
+.vzeiten .vz-pr { color: var(--z-pr); }
+.vzeiten .vz-pt { color: var(--z-pt); }
+.vzeiten .vz-pf { color: var(--z-pf); }
+.vvon { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 14px; border-radius: 16px; background: var(--bg); width: 100%; }
+.vhinweis { margin: 0; color: var(--ink-soft); font-weight: 700; font-size: 15px; }
+.vtext { width: 100%; text-align: left; line-height: 2.5; font-family: var(--en); font-size: clamp(19px, 3.4vw, 24px); }
+.vw { padding: 4px 8px; border-radius: 10px; border: 3px solid transparent; background: var(--bg); font-family: var(--en); font-weight: 700; font-size: inherit; line-height: 1.2; }
+.vw.sel { border-color: var(--mio); background: var(--mio-tint); }
+.vw.right { border-color: var(--bamboo); background: var(--bamboo-tint); color: var(--bamboo-deep); }
+.vw.bad { border-color: var(--berry); background: var(--berry-soft); color: var(--berry); text-decoration: line-through; }
+.vw.fehlt { border-color: var(--sun); background: var(--sun-soft); }
+
+/* Ergebnis */
+.vstats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 18px auto 0; }
+.vstats span { padding: 8px 14px; border-radius: 14px; background: var(--card); box-shadow: var(--lift-sm); font-weight: 700; color: var(--ink-soft); }
+.vstats b { color: var(--mio-deep); font-size: 20px; margin-right: 4px; }
+.vfehler ul { list-style: none; margin: 0; padding: 0; }
+.vfehler li { padding: 8px 0; border-bottom: 2px solid var(--bamboo-tint); font-family: var(--en); font-size: 18px; }
+.vf-l { display: flex; flex-wrap: wrap; gap: 2px 16px; margin-top: 4px; }
+.vf-l i { font-style: normal; color: var(--ink-soft); font-size: .85em; }
+.vf-l s { color: var(--berry); font-size: .85em; }
+
+@media (max-width: 760px) { .vmodes { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) {
+  .mio-banner img { width: 60px; height: 60px; }
+  .mio-banner-t b { font-size: 18px; }
+  .vtab { grid-template-columns: 1fr; gap: 6px; }
+  .vt-f { font-size: 16px; }
+  .vkbd .k { font-size: 18px; }
+  .vkbd .krow { gap: 3px; }
+  .vrow { grid-template-columns: 70px minmax(0, 1fr) auto; }
+  .vwahl .seg { min-width: 100%; }
+  .vk-n { display: block; margin: 0; font-size: 14px; }
+  .vhome .bar-title { font-size: 21px; }
+  .vt-grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, auto); grid-auto-flow: column; }
+  .vt-block.z-pf .vt-grid { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }   /* «bin geschwommen» bricht sonst um */
+  .vline { flex-direction: column; gap: 4px; }                        /* «er/sie/es» über dem Feld statt daneben */
+  .vtask .typed { min-width: min(100%, 240px); }
+}
+/* Lernkarte in einer Runde: «Weiter» bleibt unten sichtbar, auch wenn die Tabelle länger ist als der Bildschirm */
+.vtask[data-kind="karte"] .qfoot { position: sticky; bottom: 0; padding-top: 10px; background: linear-gradient(to top, var(--bg) 70%, transparent); z-index: 2; }
+/* iPad quer und PC (um 800 px hoch): sechs Zeilen, Tastatur und im Perfekt die Leertaste müssen ganz auf den Bildschirm passen
+   (gefunden von den Browser-Tests 2026-11-16) – «Konjugieren» steht schon oben in der Leiste */
+@media (max-height: 900px) {
+  .k-reihe .ask, .k-test .ask { display: none; }
+  .vrow { min-height: 40px; }
+  .qcard.k-reihe, .qcard.k-test { padding-top: 12px; padding-bottom: 12px; gap: 6px; }
+  .vkbd { gap: 5px; }
+}
+/* niedrige Bildschirme (iPhone SE, 667 px hoch): Konjugieren mit sechs Zeilen und Tastatur muss ganz auf den Bildschirm passen */
+@media (max-height: 720px) {
+  .vtask .qbao { width: 48px; height: 48px; }
+  .vtask .qbao img { max-height: 48px; }
+  .k-reihe .vinf, .k-test .vinf { font-size: 24px; }
+  .k-reihe .ask, .k-test .ask { display: none; }                      /* «Konjugieren» steht schon oben in der Leiste */
+  .vrow { min-height: 31px; font-size: 17px; border-width: 2px; }
+  .vreihe { gap: 4px; }
+  .k-reihe .fb, .k-test .fb { font-size: 15px; min-height: 20px; line-height: 1.2; margin: 0; }
+  .vkbd { gap: 4px; }
+  .vkbd .k { height: 40px; }
+  .qcard.k-reihe, .qcard.k-test { padding: 8px 10px 8px; gap: 4px; }
+  body[data-view="vtask"] .screen.task { gap: 6px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .vtask .qfoot { padding-bottom: 0; }
+}

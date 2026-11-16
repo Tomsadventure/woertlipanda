@@ -9,6 +9,9 @@ const UNIT = Object.fromEntries(D.units.map(u => [u.n, u]));
 const STICKER = Object.fromEntries(D.stickers.map(s => [s.id, s]));
 const ACTIVE = D.units.filter(u => u.aktiv);
 const img = name => `img/${name}.webp`;
+/* Erweiterungen (seit 2026-11-16: verben.js = «Deutsch: Verben mit Mio») melden hier eigene Bildschirme (views: html, after, leave,
+   key, busy), Knöpfe (acts), Zurück-Ziele (back), eine Kachel für die Startseite (home) und ihr Zurücksetzen (reset) an. */
+const EXT = window.PANDA_EXT = { views: {}, acts: {}, back: {}, home: null, reset: null };
 /* Sammelbuch: Seite 0 = Umschlag, 1 = »Dieses Buch gehört«, 2 = Titelseite, 3–36 = 17 gemalte Doppelseiten (neue kommen immer ans Ende,
    damit eingeklebte Sticker auf ihren Seiten bleiben) */
 const SZENEN = [['bambus', 'Im Bambuswald'], ['meer', 'Am Meer'], ['berge', 'In den Bergen'], ['unterwasser', 'Unter Wasser'],
@@ -55,6 +58,7 @@ function load() {
     koaSeen: !!d.koaSeen,                                     // Koa hat sich schon vorgestellt (erstes Mal in Unit 3)
     hintClosed: !!d.hintClosed,
     installed: !!d.installed,
+    verben: d.verben && typeof d.verben === 'object' ? d.verben : null,   // Lernstand «Verben mit Mio» (verben.js)
   };
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* egal */ } }
@@ -317,6 +321,7 @@ function nav(name, params = {}, push = true) {
   const from = view.name;
   if (['task', 'memory'].includes(from) && !['task', 'result', 'memory'].includes(name)) { Q = null; Sound.stop(); }
   if (from === 'buch') buchAufraeumen();
+  if (EXT.views[from] && EXT.views[from].leave && from !== name) EXT.views[from].leave(name);
   view = Object.assign({ name }, params);
   if (push) { try { history.pushState({ name }, ''); } catch (e) { /* file:// */ } }
   render();
@@ -330,13 +335,15 @@ window.addEventListener('popstate', e => {
   const from = view.name;
   if (['task', 'memory', 'result'].includes(from)) { Q = null; Sound.stop(); }
   if (from === 'buch') buchAufraeumen();
-  view = ['wald', 'karten', 'album', 'buch'].includes(s.name) ? { name: s.name } : { name: 'home' };
+  if (EXT.views[from] && EXT.views[from].leave) EXT.views[from].leave(s.name);
+  view = ['wald', 'karten', 'album', 'buch'].includes(s.name) || EXT.back[s.name] ? { name: s.name } : { name: 'home' };
   closeSheet(true);
   render();
   if (from === 'karten' && view.name !== 'karten') stickerToast();
 });
 function render() {
   document.body.dataset.view = view.name;
+  if (EXT.views[view.name]) { const v = EXT.views[view.name]; app.innerHTML = v.html(); if (v.after) v.after(); return; }
   const R = { home: homeHTML, wald: waldHTML, album: albumHTML, karten: kartenHTML, result: () => resultHTML(view.res), memory: memoryHTML };
   if (view.name === 'task') { app.innerHTML = taskShellHTML(); showTask(); return; }
   if (view.name === 'buch') { app.innerHTML = buchHTML(); buchZeigen(); return; }
@@ -434,6 +441,7 @@ function homeHTML() {
         ${nextStickerHTML()}
       </div>
     </section>
+    ${EXT.home ? EXT.home() : ''}
     <section class="unit-head" style="--u:${u.farbe}">
       <div><h2>${u.titel} <span>${esc(u.thema)}</span></h2>
         <div class="progress" aria-label="${g} von ${words.length} Wörtern sicher"><i style="width:${(100 * g / words.length).toFixed(1)}%"></i></div>
@@ -1607,8 +1615,8 @@ function onClick(e) {
       break;
     }
     case 'test-sound': sfx.right(3); setTimeout(() => Sound.say(['bao_hallo_02', { pause: 200 }, 'u1_smell']), 350); break;
-    case 'reset': openSheet('reset', confirmHTML('Alles zurücksetzen?', 'Der ganze Bambuswald, alle Lernstände, alle Sticker und das Sammelbuch werden gelöscht. Das lässt sich nicht rückgängig machen.', 'Zurücksetzen', 'reset-yes')); break;
-    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; S.stickers = []; S.neu = []; S.base = {}; S.buch = buchLaden(null); S.albumSeen = false; S.koaSeen = false; save(); closeSheet(true); nav('home', {}, false); break;
+    case 'reset': openSheet('reset', confirmHTML('Alles zurücksetzen?', 'Der ganze Bambuswald, alle Lernstände (auch die Verben mit Mio), alle Sticker und das Sammelbuch werden gelöscht. Das lässt sich nicht rückgängig machen.', 'Zurücksetzen', 'reset-yes')); break;
+    case 'reset-yes': S.w = {}; S.round = 0; S.tests = []; S.stickers = []; S.neu = []; S.base = {}; S.buch = buchLaden(null); S.albumSeen = false; S.koaSeen = false; if (EXT.reset) EXT.reset(); save(); closeSheet(true); nav('home', {}, false); break;
     case 'hint-close': S.hintClosed = true; save(); refreshInstall(); break;
     case 'buch': sfx.tap(); oeffneBuch(); break;
     case 'buch-zu': sfx.tap(); nav(BK.from); break;
@@ -1625,6 +1633,7 @@ function onClick(e) {
       try { ev.prompt(); ev.userChoice.then(c => { if (c && c.outcome === 'accepted') { S.installed = true; save(); } refreshInstall(); }).catch(refreshInstall); } catch (err) { refreshInstall(); }
       break;
     }
+    default: if (EXT.acts[act]) EXT.acts[act](b, e);
   }
 }
 document.addEventListener('keydown', e => {
@@ -1644,6 +1653,7 @@ document.addEventListener('keydown', e => {
     if (e.key === 'ArrowLeft') onClick({ target: document.querySelector('[data-act="karte-prev"]') });
     return;
   }
+  if (EXT.views[view.name]) { if (EXT.views[view.name].key) EXT.views[view.name].key(e); return; }
   if (view.name !== 'task' || !Q) return;
   if (e.key === 'Enter') {
     e.preventDefault();
@@ -1664,6 +1674,9 @@ document.addEventListener('keydown', e => {
 });
 
 /* ================================================================== Start */
+/* Werkzeuge für Erweiterungen (verben.js) */
+window.PANDA = { get S() { return S; }, get view() { return view; }, save, nav, render, Sound, sfx, voiceOn, ICON, esc, img, name,
+  openSheet, closeSheet, confirmHTML, burst, confetti, nope, reduced, bambooSVG };
 try { history.replaceState({ name: 'home' }, ''); } catch (e) { /* file:// */ }
 render();
 ['bao_denkt', 'bao_jubel', 'bao_mut'].concat(ACTIVE.some(u => u.koa) ? ['koa_denkt', 'koa_jubel', 'koa_mut', 'bao_koa_jubel'] : [])
@@ -1674,7 +1687,7 @@ if ('serviceWorker' in navigator && window.BUILD !== 'dev' && (location.protocol
   navigator.serviceWorker.register('sw.js').catch(() => {});
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) return;
-    if (['task', 'result', 'memory', 'buch'].includes(view.name)) reloadPending = true; else location.reload();
+    if (['task', 'result', 'memory', 'buch'].includes(view.name) || (EXT.views[view.name] && EXT.views[view.name].busy)) reloadPending = true; else location.reload();
   });
 }
 })();

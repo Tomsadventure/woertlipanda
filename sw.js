@@ -1,5 +1,5 @@
 /* Offline: hält alle Dateien eines App-Stands auf dem Gerät. VERSION und FILES setzt Scripts/bauen.py ein. */
-const VERSION = '2026-11-16-92a25c9';
+const VERSION = '2026-11-16-3d058ba';
 const FILES = [
   './',
   'app.js',
@@ -385,6 +385,10 @@ const FILES = [
   'img/koa_jubel.webp',
   'img/koa_mut.webp',
   'img/koa_ref.webp',
+  'img/mio_denkt.webp',
+  'img/mio_hallo.webp',
+  'img/mio_jubel.webp',
+  'img/mio_mut.webp',
   'img/s1_01.webp',
   'img/s1_02.webp',
   'img/s1_03.webp',
@@ -565,7 +569,11 @@ const FILES = [
   'index.html',
   'lernen.js',
   'manifest.webmanifest',
-  'style.css'
+  'style.css',
+  'verben.css',
+  'verben.js',
+  'verben_daten.js',
+  'verben_kern.js'
 ];
 const CACHE = 'woertlipanda-' + VERSION;
 
