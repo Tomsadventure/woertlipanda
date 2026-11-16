@@ -443,7 +443,8 @@ function homeHTML() {
     </section>
     ${EXT.home ? EXT.home() : ''}
     <section class="unit-head" style="--u:${u.farbe}">
-      <div><h2>${u.titel} <span>${esc(u.thema)}</span></h2>
+      <div><div class="unit-top"><h2>${u.titel} <span>${esc(u.thema)}</span></h2>
+        ${ACTIVE.length > 1 ? `<div class="unit-seg" role="radiogroup" aria-label="Unit wählen">${ACTIVE.map(x => `<button role="radio" aria-checked="${x.n === S.unit}" data-act="unit" data-unit="${x.n}" style="--u:${x.farbe}">${x.titel}</button>`).join('')}</div>` : ''}</div>
         <div class="progress" aria-label="${g} von ${words.length} Wörtern sicher"><i style="width:${(100 * g / words.length).toFixed(1)}%"></i></div>
         <p class="unit-sub">${g} von ${words.length} Wörtern sicher · ${words.filter(w => st(w.id).box > 0).length} angefangen</p></div>
     </section>

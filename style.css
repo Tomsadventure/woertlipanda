@@ -651,3 +651,12 @@ body[data-view="buch"] .screen.buch {
 @media (prefers-reduced-motion: reduce) {
   .halb, .halb::after, .pst.klebt { animation: none !important; }
 }
+
+/* Unit wählen gleich oben in der Unit-Karte (2026-11-16): vorher nur ganz unten unter «Weitere Units» – seit Mios Kachel auf der
+   Startseite steht, musste man dafür noch weiter nach unten wischen (der Benutzer: «kann nicht mehr gewechselt werden») */
+.unit-top { display: flex; align-items: center; justify-content: space-between; gap: 8px 14px; flex-wrap: wrap; margin-bottom: 10px; }
+.unit-head .unit-top h2 { margin: 0; }
+.unit-seg { display: flex; gap: 4px; padding: 4px; border-radius: 16px; background: var(--bg); }
+.unit-seg button { min-height: 44px; padding: 4px 18px; border-radius: 12px; font-weight: 800; font-size: 16px; color: var(--ink-soft); white-space: nowrap; }
+.unit-seg button[aria-checked="true"] { background: var(--u); color: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .2); }
+@media (max-width: 560px) { .unit-seg { width: 100%; } .unit-seg button { flex: 1; padding: 4px 6px; } }
