@@ -15,7 +15,7 @@ const SZENEN = [['bambus', 'Im Bambuswald'], ['meer', 'Am Meer'], ['berge', 'In 
   ['winter', 'Im Winter'], ['nacht', 'In der Nacht'], ['burg', 'In der Burg'], ['gipfel', 'Auf dem Gipfel'],
   ['haus', 'Zu Hause'], ['see', 'Am See'], ['insel', 'Auf der Insel'], ['regen', 'Im Regen'], ['buehne', 'Auf der Bühne'],
   ['weihnachten', 'An Weihnachten'], ['herbst', 'Im Herbst'], ['wanderweg', 'Auf dem Wanderweg'],
-  ['garten', 'Im Garten']];
+  ['garten', 'Im Garten'], ['mond', 'Auf dem Mond']];
 const BUCH_SEITEN = 3 + 2 * SZENEN.length;
 // Farbe mischen: t = 0 … 1 Richtung `to` (hell = heller, #000000 = dunkler) – für den Unit-farbigen Kopf der Startseite;
 // oben links mit warmem Hellgelb statt Weiss, damit der Verlauf leuchtet wie früher das feste Grün (#8BCB72)
