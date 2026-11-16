@@ -2,7 +2,8 @@
 
 Englisch-Wörtli der 4. Klasse (Schweiz) lernen mit Bao, dem Panda (ab Unit 3 mit seinem Freund Koa, dem Koala): Lernkarten,
 Hören, Wählen, Schreiben (Puzzle und Tastatur), Memory und Wörtlitest. Jedes sichere Wort lässt im Bambuswald einen Bambus
-wachsen, und für Lernpunkte gibt es Sticker fürs Stickeralbum und das Sammelbuch. Fürs iPad, iPhone und den PC;
+wachsen, und für Lernpunkte gibt es Sticker fürs Stickeralbum und das Sammelbuch. Dazu Deutsch: mit Mio, dem roten Panda, die
+unregelmässigen Verben in Präsens, Präteritum und Perfekt üben (Belohnung: Sticker für Mios Baumhaus). Fürs iPad, iPhone und den PC;
 läuft auch ohne Internet (Safari → Teilen → «Zum Home-Bildschirm»).
 
 Dieser Ordner wird von `Scripts/bauen.py` im Projekt `Woertlipanda` erzeugt – hier nichts von Hand ändern, es wird überschrieben.

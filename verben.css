@@ -46,6 +46,13 @@ b.z-pf { color: var(--z-pf); }
 /* Verb-Tabelle: je Zeitform ein Block */
 .vinf { margin: 0; font-family: var(--en); font-weight: 700; font-size: clamp(30px, 6vw, 44px); line-height: 1.1; }
 .vk-kopf { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+/* Lautsprecher (Mios Stimme): klein neben Verb und Zeitform; Sätze kann man antippen */
+.vsnd { width: 38px; height: 38px; background: var(--mio); color: #fff; box-shadow: 0 3px 0 var(--mio-deep); }
+.vsnd:first-child { background: var(--mio); box-shadow: 0 3px 0 var(--mio-deep); }
+.vsnd .ic { width: 20px; height: 20px; }
+.vt-block h4 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.vt-block h4 .vsnd { width: 32px; height: 32px; background: rgba(255, 255, 255, .85); color: inherit; box-shadow: none; }
+.vsatz[data-act] { cursor: pointer; }
 .vgr { padding: 3px 12px; border-radius: 12px; font-weight: 800; font-size: 14px; background: var(--mio-tint); color: var(--mio-deep); }
 .vgr.g2 { background: var(--z-pf-t); color: var(--z-pf); }
 .vtab { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; text-align: left; }
@@ -182,3 +189,45 @@ body[data-view="vtask"] .screen.task { display: flex; flex-direction: column; mi
   body[data-view="vtask"] .screen.task { gap: 6px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
   .vtask .qfoot { padding-bottom: 0; }
 }
+
+/* ------------------------------------------------------------ Mios Baumhaus */
+.mh-banner { width: 100%; display: flex; align-items: center; gap: 14px; margin: 0 0 12px; padding: 8px 18px 8px 10px; border-radius: var(--r-md); text-align: left; position: relative;
+  background: linear-gradient(120deg, #F6E3C8, #EBC896); color: #5A3A1C; box-shadow: 0 4px 0 #C99A5E, 0 10px 22px rgba(120, 80, 30, .16); }
+.mh-banner:active { transform: translateY(3px); }
+.mh-banner > img { width: 54px; height: 76px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 5px rgba(60, 30, 0, .3); flex: none; }
+.mh-banner .ic { width: 26px; height: 26px; }
+.mh-banner.has-new::after { content: ''; position: absolute; top: 6px; left: 52px; width: 14px; height: 14px; border-radius: 50%; background: var(--berry); box-shadow: 0 0 0 3px #F6E3C8; }
+.vhaus .bar-title { flex: 1; min-width: 0; }
+.mh-zahl { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 18px; background: var(--card); box-shadow: var(--lift-sm); font-weight: 800; color: var(--mio-deep); }
+.mh-umschlag { position: relative; display: block; width: min(62vw, 46vh, 340px); margin: 12px auto 0; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 0 #8A5A2B, 0 22px 34px rgba(80, 50, 20, .3); }
+.mh-umschlag > img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+.mh-u-bild { position: absolute; left: 50%; top: 18%; width: 46%; aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(circle at 50% 35%, #FFF6E2, #F0D7A8); box-shadow: inset 0 3px 8px rgba(90, 50, 10, .35); display: grid; place-items: center; overflow: hidden; }
+.mh-u-bild img { width: 84%; margin-top: 12%; }
+.mh-u-titel { position: absolute; left: 8%; right: 8%; bottom: 13%; text-align: center; font-weight: 800; font-size: clamp(20px, 5vw, 30px); color: #FFF3DC; text-shadow: 0 2px 0 #5A3414, 0 0 10px rgba(60, 30, 0, .7); }
+.mh-hinweis { text-align: center; margin: 22px 0 0; font-weight: 700; color: var(--ink-soft); }
+.mh-tabs { margin: 4px 0 10px; background: var(--card); box-shadow: var(--lift-sm); }
+.mh-tabs button[aria-checked="true"] { background: var(--mio); box-shadow: 0 2px 0 var(--mio-deep); }
+.mh-szene { position: relative; width: 100%; max-width: min(100%, calc((100dvh - 330px) * 1.5)); margin: 0 auto; aspect-ratio: 3 / 2; border-radius: 16px; overflow: hidden; box-shadow: var(--lift); background: var(--bamboo-tint); touch-action: none; }
+.mh-grund { width: 100%; height: 100%; object-fit: cover; pointer-events: none; user-select: none; -webkit-user-select: none; }
+.mh-st { position: absolute; width: 17%; transform: translate(-50%, -50%); touch-action: none; cursor: grab; border-radius: 12px; -webkit-user-select: none; user-select: none; }
+.mh-st.gross { width: 26%; }
+.mh-st img { width: 100%; pointer-events: none; filter: drop-shadow(0 3px 3px rgba(40, 30, 10, .3)); }
+.mh-st.sel { outline: 3px dashed var(--mio); outline-offset: 2px; }
+.mh-st.zieht { cursor: grabbing; z-index: 5; }
+.mh-st.zieht img { filter: drop-shadow(0 10px 8px rgba(40, 30, 10, .35)); transform: scale(1.06); }
+.mh-b.glitzer { filter: drop-shadow(0 0 6px rgba(255, 201, 60, .9)); }
+.mh-leiste { min-height: 52px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 8px 0 4px; text-align: center; }
+.mh-tipp { font-weight: 700; color: var(--ink-soft); font-size: 15px; }
+.mh-name { font-weight: 800; font-size: 18px; }
+.mh-weg { min-height: 44px; padding: 4px 16px; }
+.mh-kiste { display: flex; gap: 8px; padding: 10px; border-radius: 16px; background: linear-gradient(#EBD2A8, #DDBD8A); box-shadow: inset 0 3px 6px rgba(90, 50, 10, .25); overflow-x: auto; min-height: 92px; align-items: center; }
+.mh-k { flex: none; width: 72px; height: 72px; border-radius: 14px; background: rgba(255, 255, 255, .7); display: grid; place-items: center; position: relative; }
+.mh-k img { max-width: 62px; max-height: 62px; }
+.mh-k.neu::after { content: 'Neu'; position: absolute; top: -6px; right: -6px; padding: 1px 7px; border-radius: 9px; background: var(--berry); color: #fff; font-size: 12px; font-weight: 800; }
+.mh-k.leer { background: rgba(255, 255, 255, .28); color: rgba(90, 60, 20, .45); border: 2px dashed rgba(90, 60, 20, .3); }
+.mh-neu h2 { color: var(--mio-deep); }
+.mh-neu-r { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; margin: 8px 0 12px; }
+.mh-neu-i { display: flex; flex-direction: column; align-items: center; gap: 2px; font-weight: 800; animation: pop .5s cubic-bezier(.3, 1.5, .5, 1) both; }
+.mh-neu-i img { width: 96px; height: 96px; object-fit: contain; }
+.mh-neu-i small { font-size: 14px; }
+@media (max-width: 560px) { .mh-st { width: 21%; } .mh-st.gross { width: 32%; } .mh-k { width: 62px; height: 62px; } .mh-k img { max-width: 54px; max-height: 54px; } .mh-tabs button { font-size: 13px; } }
